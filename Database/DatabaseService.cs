@@ -156,6 +156,7 @@ namespace Cine_Critic_AI.Services
                 }
             }
             reader3.Close();
+        }
 
         // ================== USERS ==================
         public void InsertUser(User user)
