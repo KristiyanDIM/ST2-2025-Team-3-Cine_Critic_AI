@@ -147,22 +147,36 @@ namespace Cine_Critic_AI.Controllers
         [Authorize]
         public async Task<IActionResult> Generate(string description)
         {
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                return Json(new { error = "Моля, въведете описание на филма." });
+            }
+
+            // 🔹 Разпознава и отрицателни числа, например "-2" или "–3"
+            var match = Regex.Match(description, @"-?\d+");
+            if (match.Success && int.TryParse(match.Value, out int rate))
+            {
+                if (rate < 1 || rate > 5)
+                {
+                    // ⚠️ Извън диапазона 1–5
+                    return Json(new { error = "Моля, въведете оценка между 1 и 5." });
+                }
+            }
+
+            // 🔹 Генериране само ако оценката е валидна
             var generatedText = await _ai.GenerateReviewAsync("AI Generated Review", description);
             var emotion = await _ai.ExtractEmotionFromTextAsync(generatedText);
             var rating = ExtractRatingFromText(generatedText ?? "");
 
-            var review = _reviewFactory.CreateReview(rating, generatedText, emotion);
-
-            _database.InsertReview(review);
-            _appLogger.Log($"Създадено ревю с фабрика (ID {review.Id})");
-
             return Json(new
             {
-                comment = review.Comment,
-                emotion = review.EmotionTone,
-                rate = review.Rate
+                comment = generatedText ?? "",
+                emotion = emotion ?? "неутрален",
+                rate = rating > 0 ? rating : 3
             });
         }
+
+
 
         private int ExtractRatingFromText(string text)
         {
