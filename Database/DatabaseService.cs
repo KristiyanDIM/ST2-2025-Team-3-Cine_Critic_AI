@@ -27,42 +27,83 @@ namespace Cine_Critic_AI.Services
 
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-            CREATE TABLE IF NOT EXISTS Users(
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Username TEXT NOT NULL UNIQUE,
-                Email TEXT NOT NULL UNIQUE,
-                Password TEXT NOT NULL,
-                RegisteredOn TEXT
-            );
+    CREATE TABLE IF NOT EXISTS Users(
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Username TEXT NOT NULL UNIQUE,
+        Email TEXT NOT NULL UNIQUE,
+        Password TEXT NOT NULL,
+        RegisteredOn TEXT
+    );
 
-            CREATE TABLE IF NOT EXISTS Movies(
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Title TEXT NOT NULL,
-                Year INTEGER NOT NULL,
-                Genre TEXT NOT NULL,
-                Director TEXT NOT NULL,
-                Description TEXT,
-                ImageUrl TEXT
-            );
+    CREATE TABLE IF NOT EXISTS Movies(
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Title TEXT NOT NULL,
+        Year INTEGER NOT NULL,
+        Genre TEXT NOT NULL,
+        Director TEXT NOT NULL,
+        Description TEXT,
+        ImageUrl TEXT
+    );
 
-            CREATE TABLE IF NOT EXISTS Reviews(
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Rate INTEGER NOT NULL,
-                Comment TEXT,
-                EmotionTone TEXT,
-                Date TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS ChatMessages(
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                UserId INTEGER NOT NULL,
-                Sender TEXT NOT NULL,   -- 'User' или 'Bot'
-                Message TEXT NOT NULL,
-                Timestamp TEXT NOT NULL DEFAULT (datetime('now'))
-            );
-            ";
+    CREATE TABLE IF NOT EXISTS Reviews(
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Rate INTEGER NOT NULL,
+        Comment TEXT,
+        EmotionTone TEXT,
+        Date TEXT NOT NULL,
+        MovieId INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS ChatMessages(
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        UserId INTEGER NOT NULL,
+        Sender TEXT NOT NULL,
+        Message TEXT NOT NULL,
+        Timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    ";
             cmd.ExecuteNonQuery();
 
-            // Проверка и добавяне на MovieId в Reviews, ако липсва
+            // ✅ Проверка и ако колоната Date е NOT NULL, я правим NULLABLE
+            cmd.CommandText = "PRAGMA table_info(Reviews);";
+            using (var reviewReader = cmd.ExecuteReader())
+            {
+                bool dateNotNull = false;
+                while (reviewReader.Read())
+                {
+                    if (reviewReader["name"].ToString() == "Date" &&
+                        reviewReader["notnull"].ToString() == "1")
+                    {
+                        dateNotNull = true;
+                        break;
+                    }
+                }
+                reviewReader.Close();
+
+                if (dateNotNull)
+                {
+                    // Преименуваме старата таблица и създаваме нова, където Date е NULLABLE
+                    cmd.CommandText = @"
+                ALTER TABLE Reviews RENAME TO Reviews_old;
+
+                CREATE TABLE Reviews(
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Rate INTEGER NOT NULL,
+                    Comment TEXT,
+                    EmotionTone TEXT,
+                    Date TEXT NULL,
+                    MovieId INTEGER
+                );
+
+                INSERT INTO Reviews (Id, Rate, Comment, EmotionTone, Date, MovieId)
+                SELECT Id, Rate, Comment, EmotionTone, Date, MovieId FROM Reviews_old;
+
+                DROP TABLE Reviews_old;";
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            // ✅ Проверка и добавяне на MovieId, ако липсва
             cmd.CommandText = "PRAGMA table_info(Reviews);";
             using var reader = cmd.ExecuteReader();
             bool movieIdExists = false;
@@ -82,7 +123,7 @@ namespace Cine_Critic_AI.Services
                 cmd.ExecuteNonQuery();
             }
 
-            // Проверка и добавяне на ImageUrl в Movies, ако липсва
+            // ✅ Проверка и добавяне на ImageUrl в Movies, ако липсва
             cmd.CommandText = "PRAGMA table_info(Movies);";
             using var reader2 = cmd.ExecuteReader();
             bool imageUrlExists = false;
@@ -102,6 +143,7 @@ namespace Cine_Critic_AI.Services
                 cmd.ExecuteNonQuery();
             }
         }
+
 
         // ================== USERS ==================
         public void InsertUser(User user)
@@ -296,8 +338,10 @@ namespace Cine_Critic_AI.Services
             cmd.Parameters.AddWithValue("@Rate", review.Rate);
             cmd.Parameters.AddWithValue("@Comment", review.Comment ?? "");
             cmd.Parameters.AddWithValue("@EmotionTone", review.EmotionTone ?? "");
-            cmd.Parameters.AddWithValue("@Date", review.Date.ToString("yyyy-MM-dd HH:mm:ss"));
-            cmd.Parameters.AddWithValue("@MovieId", review.MovieId);
+            cmd.Parameters.AddWithValue("@Date",
+                review.Date.HasValue
+                    ? review.Date.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                    : (object)DBNull.Value); cmd.Parameters.AddWithValue("@MovieId", review.MovieId);
             cmd.ExecuteNonQuery();
         }
 
@@ -316,8 +360,10 @@ namespace Cine_Critic_AI.Services
             cmd.Parameters.AddWithValue("@Rate", review.Rate);
             cmd.Parameters.AddWithValue("@Comment", review.Comment ?? "");
             cmd.Parameters.AddWithValue("@EmotionTone", review.EmotionTone ?? "");
-            cmd.Parameters.AddWithValue("@Date", review.Date.ToString("yyyy-MM-dd HH:mm:ss"));
-            cmd.Parameters.AddWithValue("@Id", review.Id);
+            cmd.Parameters.AddWithValue("@Date",
+                review.Date.HasValue
+                    ? review.Date.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                    : (object)DBNull.Value); cmd.Parameters.AddWithValue("@Id", review.Id);
             cmd.ExecuteNonQuery();
         }
 
@@ -350,7 +396,9 @@ namespace Cine_Critic_AI.Services
                     Rate = Convert.ToInt32(reader["Rate"]),
                     Comment = reader["Comment"].ToString(),
                     EmotionTone = reader["EmotionTone"].ToString(),
-                    Date = DateTime.Parse(reader["Date"].ToString()),
+                    Date = reader["Date"] != DBNull.Value && !string.IsNullOrWhiteSpace(reader["Date"].ToString())
+    ? DateTime.Parse(reader["Date"].ToString())
+    : (DateTime?)null,
                     MovieId = Convert.ToInt32(reader["MovieId"]),
                     Movie = new Movie
                     {
@@ -384,7 +432,9 @@ namespace Cine_Critic_AI.Services
                     Rate = Convert.ToInt32(reader["Rate"]),
                     Comment = reader["Comment"].ToString(),
                     EmotionTone = reader["EmotionTone"].ToString(),
-                    Date = DateTime.Parse(reader["Date"].ToString()),
+                    Date = reader["Date"] != DBNull.Value && !string.IsNullOrWhiteSpace(reader["Date"].ToString())
+    ? DateTime.Parse(reader["Date"].ToString())
+    : (DateTime?)null,
                     MovieId = reader["MovieId"] != DBNull.Value ? Convert.ToInt32(reader["MovieId"]) : 0
                 };
             }
