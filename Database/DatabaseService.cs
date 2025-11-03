@@ -43,6 +43,7 @@ namespace Cine_Critic_AI.Services
                 Director TEXT NOT NULL,
                 Description TEXT,
                 ImageUrl TEXT
+                
             );
 
             CREATE TABLE IF NOT EXISTS Reviews(
@@ -101,6 +102,33 @@ namespace Cine_Critic_AI.Services
                 cmd.CommandText = "ALTER TABLE Movies ADD COLUMN ImageUrl TEXT;";
                 cmd.ExecuteNonQuery();
             }
+
+            // Проверка и добавяне на AddedOn в Movies, ако липсва
+            cmd.CommandText = "PRAGMA table_info(Movies);";
+            using var reader3 = cmd.ExecuteReader();
+            bool addedOnExists = false;
+            while (reader3.Read())
+            {
+                if (reader3["name"].ToString() == "AddedOn")
+                {
+                    addedOnExists = true;
+                    break;
+                }
+            }
+            reader3.Close();
+
+            if (!addedOnExists)
+            {
+                // 1️⃣ Добавяне на колоната без стойност по подразбиране
+                cmd.CommandText = "ALTER TABLE Movies ADD COLUMN AddedOn DATETIME;";
+                cmd.ExecuteNonQuery();
+
+                // 2️⃣ Попълване на вече съществуващите редове със сегашното време
+                cmd.CommandText = "UPDATE Movies SET AddedOn = datetime('now') WHERE AddedOn IS NULL;";
+                cmd.ExecuteNonQuery();
+            }
+
+
         }
 
         // ================== USERS ==================
@@ -189,15 +217,15 @@ namespace Cine_Critic_AI.Services
             conn.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-                INSERT INTO Movies (Title, Year, Genre, Director, Description, AddedOn)
-                VALUES (@Title, @Year, @Genre, @Director, @Description, @AddedOn)";
+        INSERT INTO Movies (Title, Year, Genre, Director, Description, ImageUrl, AddedOn)
+        VALUES (@Title, @Year, @Genre, @Director, @Description, @ImageUrl, @AddedOn)";
             cmd.Parameters.AddWithValue("@Title", movie.Title);
             cmd.Parameters.AddWithValue("@Year", movie.Year);
             cmd.Parameters.AddWithValue("@Genre", movie.Genre);
             cmd.Parameters.AddWithValue("@Director", movie.Director);
             cmd.Parameters.AddWithValue("@Description", movie.Description ?? "");
             cmd.Parameters.AddWithValue("@ImageUrl", movie.ImageUrl ?? "");
-            cmd.Parameters.AddWithValue("@AddedOn", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            cmd.Parameters.AddWithValue("@AddedOn", movie.AddedOn.ToString("yyyy-MM-dd HH:mm:ss"));
             cmd.ExecuteNonQuery();
         }
 
@@ -207,14 +235,14 @@ namespace Cine_Critic_AI.Services
             conn.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-                UPDATE Movies
-                SET Title = @Title,
-                    Year = @Year,
-                    Genre = @Genre,
-                    Director = @Director,
-                    Description = @Description,
-                    ImageUrl = @ImageUrl
-                WHERE Id = @Id";
+        UPDATE Movies
+        SET Title = @Title,
+            Year = @Year,
+            Genre = @Genre,
+            Director = @Director,
+            Description = @Description,
+            ImageUrl = @ImageUrl
+        WHERE Id = @Id";
             cmd.Parameters.AddWithValue("@Title", movie.Title);
             cmd.Parameters.AddWithValue("@Year", movie.Year);
             cmd.Parameters.AddWithValue("@Genre", movie.Genre);
@@ -253,7 +281,10 @@ namespace Cine_Critic_AI.Services
                     Genre = reader["Genre"].ToString(),
                     Director = reader["Director"].ToString(),
                     Description = reader["Description"].ToString(),
-                    ImageUrl = reader["ImageUrl"] != DBNull.Value ? reader["ImageUrl"].ToString() : ""
+                    ImageUrl = reader["ImageUrl"] != DBNull.Value ? reader["ImageUrl"].ToString() : "",
+                    AddedOn = reader["AddedOn"] != DBNull.Value
+                        ? DateTime.Parse(reader["AddedOn"].ToString())
+                        : DateTime.Now // fallback ако е стара база
                 });
             }
             return movies;
@@ -278,11 +309,15 @@ namespace Cine_Critic_AI.Services
                     Genre = reader["Genre"].ToString(),
                     Director = reader["Director"].ToString(),
                     Description = reader["Description"].ToString(),
-                    ImageUrl = reader["ImageUrl"] != DBNull.Value ? reader["ImageUrl"].ToString() : ""
+                    ImageUrl = reader["ImageUrl"] != DBNull.Value ? reader["ImageUrl"].ToString() : "",
+                    AddedOn = reader["AddedOn"] != DBNull.Value
+                        ? DateTime.Parse(reader["AddedOn"].ToString())
+                        : DateTime.Now
                 };
             }
             return null;
         }
+
 
         // ================== REVIEWS ==================
         public void InsertReview(Review review)

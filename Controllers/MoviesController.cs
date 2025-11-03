@@ -90,6 +90,7 @@ namespace Cine_Critic_AI.Controllers
         {
             // Логваме отварянето на страницата за създаване на филм
             _appLogger.Log($"{GetCurrentUser()} отвори страницата за създаване на нов филм.");
+
             return View();
         }
 
@@ -102,8 +103,12 @@ namespace Cine_Critic_AI.Controllers
 
             if (ModelState.IsValid)
             {
+                // адаваме дата на добавяне
+                movie.AddedOn = DateTime.Now;
+
                 _database.InsertMovie(movie);
-                // Логваме добавянето на нов филм
+
+                // Лог за добавяне
                 _appLogger.Log($"{GetCurrentUser()} добави нов филм: {movie.Title} ({movie.Year})");
                 return RedirectToAction(nameof(Index));
             }
@@ -141,10 +146,18 @@ namespace Cine_Critic_AI.Controllers
                 return NotFound();
             }
 
+            var existing = _database.GetMovieById(id);
+            if (existing == null)
+                return NotFound();
+
             if (ModelState.IsValid)
             {
+                // ⚠️ Запазваме старата дата на добавяне, за да не се презаписва
+                movie.AddedOn = existing.AddedOn;
+
                 _database.UpdateMovie(movie);
-                // Логваме редактирането на филм
+
+                // 🪵 Лог за редактиране
                 _appLogger.Log($"{GetCurrentUser()} редактира филма: {movie.Title}");
                 return RedirectToAction(nameof(Index));
             }

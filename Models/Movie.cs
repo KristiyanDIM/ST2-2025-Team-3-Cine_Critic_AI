@@ -28,6 +28,7 @@ namespace Cine_Critic_AI.Models
 
         [Display(Name = "Изображение (URL или локален път)")]
         public string? ImageUrl { get; set; }
+
         [Display(Name = "Дата на добавяне")]
         public DateTime AddedOn { get; set; } = DateTime.Now; //
     }
