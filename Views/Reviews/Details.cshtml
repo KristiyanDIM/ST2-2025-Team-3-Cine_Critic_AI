@@ -15,7 +15,7 @@
             <p><strong>Оценка:</strong> ⭐ @Model.Rate / 5</p>
             <p><strong>Коментар:</strong> @Model.Comment</p>
             <p><strong>Емоционален тон:</strong> @Model.EmotionTone</p>
-            <p><strong>Дата:</strong> @Model.Date.ToString("dd.MM.yyyy")</p>
+            <p><strong>Дата:</strong> @Model.Date?.ToString("dd.MM.yyyy")</p>
         </div>
 
         <div class="d-flex justify-content-center gap-3">

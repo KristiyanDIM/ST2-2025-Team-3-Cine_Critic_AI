@@ -20,9 +20,8 @@ namespace Cine_Critic_AI.Models
         [Display(Name = "Емоционален тон")]
         public string? EmotionTone { get; set; }
 
-        [Required]
         [Display(Name = "Дата")]
-        public DateTime Date { get; set; } = DateTime.Now;
+        public DateTime? Date { get; set; }
 
         [Required]
         [Display(Name = "Филм")]
