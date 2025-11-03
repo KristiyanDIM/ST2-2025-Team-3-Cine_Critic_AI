@@ -97,6 +97,17 @@
         background-color: #000;
         transform: scale(1.05);
     }
+
+    /* 🧹 Премахваме стрелките от input[type=number] във всички браузъри */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type=number] {
+        -moz-appearance: textfield; /* за Firefox */
+    }
 </style>
 
 @section Scripts {
