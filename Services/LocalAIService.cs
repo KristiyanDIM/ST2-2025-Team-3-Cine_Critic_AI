@@ -26,16 +26,37 @@ namespace Cine_Critic_AI.Services
             var json = JsonSerializer.Serialize(new
             {
                 model = "llama3",
-                prompt = $"Напиши кратко и смислено ревю за филм. Заглавие: '{title}'. Описание: {description}. " +
-                         "Добави мнение в няколко изречения, включи оценка (1-5) и емоционален тон (позитивен, неутрален или негативен)."
+                // ПОДАВАМЕ ИЗРИЧНО НА БЪЛГАРСКИ
+                prompt = $"Напиши кратко ревю на филм със заглавие '{title}' и описание: {description}. " +
+                         $"Ревюто трябва да е на български език, естествено звучащо и до 4-5 изречения. " +
+                         $"Добави кратко мнение и евентуално оценка от 1 до 5."
             });
 
-            var response = await _http.PostAsync("api/generate", new StringContent(json, Encoding.UTF8, "application/json"));
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                var response = await _http.PostAsync("api/generate", new StringContent(json, Encoding.UTF8, "application/json"));
+                response.EnsureSuccessStatusCode();
 
-            var content = await response.Content.ReadAsStringAsync();
-            return ExtractResponseText(content);
+                var content = await response.Content.ReadAsStringAsync();
+
+                var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                var sb = new StringBuilder();
+                foreach (var line in lines)
+                {
+                    var doc = JsonDocument.Parse(line);
+                    if (doc.RootElement.TryGetProperty("response", out var resp))
+                        sb.Append(resp.GetString());
+                }
+
+                return sb.ToString().Trim();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ AI грешка при генериране: {ex.Message}");
+                return "Грешка при генериране на ревю.";
+            }
         }
+
 
         /// <summary>
         /// Анализира текста и връща неговия емоционален тон.
