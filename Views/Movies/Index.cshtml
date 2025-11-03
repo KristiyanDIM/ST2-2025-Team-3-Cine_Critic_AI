@@ -4,31 +4,73 @@
     ViewData["Title"] = "Филми";
 }
 
-<h2 class="page-title">@ViewData["Title"]</h2>
+<h2 class="page-title mb-4">@ViewData["Title"]</h2>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary mb-3">➕ Добави нов филм</a>
-</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a asp-action="Create" class="btn btn-primary">➕ Добави нов филм</a>
 
-<div class="movies-grid-new">
-    @foreach (var movie in Model)
-    {
-        <div class="movie-card-new">
-            <div class="movie-card-image">
-                <img src="@(!string.IsNullOrEmpty(movie.ImageUrl) ? movie.ImageUrl : "/images/default_poster.jpg")"
-                     alt="@movie.Title" />
-            </div>
-            <div class="movie-card-content">
-                <h3 class="movie-card-title">@movie.Title</h3>
-                <p><strong>Година:</strong> @movie.Year</p>
-                <p><strong>Жанр:</strong> @movie.Genre</p>
-                <p><strong>Режисьор:</strong> @movie.Director</p>
-            </div>
-            <div class="movie-card-actions">
-                <a asp-action="Details" asp-route-id="@movie.Id" class="btn btn-info btn-sm">Детайли</a>
-                <a asp-action="Edit" asp-route-id="@movie.Id" class="btn btn-warning btn-sm">Редактирай</a>
-                <a asp-action="Delete" asp-route-id="@movie.Id" class="btn btn-danger btn-sm">Изтрий</a>
-            </div>
-        </div>
-    }
+    <form asp-action="Index" method="get" class="d-flex align-items-center gap-2">
+        <input type="text" name="search" value="@Context.Request.Query["search"]" class="form-control" placeholder="🔍 Търси по заглавие..." style="width: 220px;" />
+
+        <select name="genre" class="form-select" style="width: 160px;">
+            <option value="">🎭 Всички жанрове</option>
+            @foreach (var genre in Model.Select(m => m.Genre).Distinct().OrderBy(g => g))
+            {
+                <option value="@genre" selected="@(Context.Request.Query["genre"] == genre ? "selected" : null)">
+                    @genre
+                </option>
+            }
+        </select>
+
+        <select name="year" class="form-select" style="width: 130px;">
+            <option value="">📅 Всички години</option>
+            @foreach (var year in Model.Select(m => m.Year).Distinct().OrderByDescending(y => y))
+            {
+                <option value="@year" selected="@(Context.Request.Query["year"] == year.ToString() ? "selected" : null)">
+                    @year
+                </option>
+            }
+        </select>
+
+        <select name="sort" class="form-select" style="width: 180px;">
+            <option value="date_desc" selected="@(Context.Request.Query["sort"] == "date_desc" ? "selected" : null)">🕒 Най-нови</option>
+            <option value="date_asc" selected="@(Context.Request.Query["sort"] == "date_asc" ? "selected" : null)">🕒 Най-стари</option>
+        </select>
+
+        <button type="submit" class="btn btn-success">Филтрирай</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">🔄 Изчисти</a>
+    </form>
 </div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">❗ Няма намерени филми според зададените критерии.</div>
+}
+else
+{
+    <div class="movies-grid-new">
+        @foreach (var movie in Model)
+        {
+            <div class="movie-card-new shadow-sm">
+                <div class="movie-card-image">
+                    <img src="@(!string.IsNullOrEmpty(movie.ImageUrl) ? movie.ImageUrl : "/images/default_poster.jpg")"
+                         alt="@movie.Title" />
+                </div>
+
+                <div class="movie-card-content">
+                    <h4 class="movie-card-title">@movie.Title</h4>
+                    <p><strong>Година:</strong> @movie.Year</p>
+                    <p><strong>Жанр:</strong> @movie.Genre</p>
+                    <p><strong>Режисьор:</strong> @movie.Director</p>
+                    <p><strong>Добавен:</strong> @movie.AddedOn.ToString("dd.MM.yyyy")</p>
+                </div>
+
+                <div class="movie-card-actions mt-2">
+                    <a asp-action="Details" asp-route-id="@movie.Id" class="btn btn-info btn-sm">Детайли</a>
+                    <a asp-action="Edit" asp-route-id="@movie.Id" class="btn btn-warning btn-sm">Редактирай</a>
+                    <a asp-action="Delete" asp-route-id="@movie.Id" class="btn btn-danger btn-sm">Изтрий</a>
+                </div>
+            </div>
+        }
+    </div>
+}

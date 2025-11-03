@@ -26,13 +26,44 @@ namespace Cine_Critic_AI.Controllers
         }
 
         // GET: Movies
-        public IActionResult Index()
+        public IActionResult Index(string? search, int? year, string? genre, DateTime? addedAfter)
         {
-            var movies = _database.GetAllMovies();
-            // Логваме действието на потребителя чрез Singleton Logger
-            _appLogger.Log($"{GetCurrentUser()} зареди списъка с филми.");
-            return View(movies);
+            var allMovies = _database.GetAllMovies();
+            var filtered = allMovies.AsQueryable();
+
+            // 🔍 Търсене по заглавие, режисьор или описание
+            if (!string.IsNullOrWhiteSpace(search))
+                filtered = filtered.Where(m =>
+                    m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    m.Director.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    m.Description.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+            // 📅 Филтър по година
+            if (year.HasValue)
+                filtered = filtered.Where(m => m.Year == year.Value);
+
+            // 🎭 Филтър по жанр
+            if (!string.IsNullOrWhiteSpace(genre))
+                filtered = filtered.Where(m =>
+                    m.Genre.Equals(genre, StringComparison.OrdinalIgnoreCase));
+
+            // 🕓 Филтър по дата на добавяне
+            if (addedAfter.HasValue)
+                filtered = filtered.Where(m => m.AddedOn >= addedAfter.Value);
+
+            // Подготовка на ViewBag данни за падащите менюта
+            ViewBag.Genres = allMovies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
+            ViewBag.Years = allMovies.Select(m => m.Year).Distinct().OrderByDescending(y => y).ToList();
+
+            // Запомняне на текущите филтри
+            ViewBag.Search = search;
+            ViewBag.Year = year;
+            ViewBag.Genre = genre;
+            ViewBag.AddedAfter = addedAfter?.ToString("yyyy-MM-dd");
+
+            return View(filtered.ToList());
         }
+
 
         // GET: Movies/Details/5
         public IActionResult Details(int? id)

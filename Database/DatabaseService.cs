@@ -189,14 +189,15 @@ namespace Cine_Critic_AI.Services
             conn.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-                INSERT INTO Movies (Title, Year, Genre, Director, Description, ImageUrl)
-                VALUES (@Title, @Year, @Genre, @Director, @Description, @ImageUrl)";
+                INSERT INTO Movies (Title, Year, Genre, Director, Description, AddedOn)
+                VALUES (@Title, @Year, @Genre, @Director, @Description, @AddedOn)";
             cmd.Parameters.AddWithValue("@Title", movie.Title);
             cmd.Parameters.AddWithValue("@Year", movie.Year);
             cmd.Parameters.AddWithValue("@Genre", movie.Genre);
             cmd.Parameters.AddWithValue("@Director", movie.Director);
             cmd.Parameters.AddWithValue("@Description", movie.Description ?? "");
             cmd.Parameters.AddWithValue("@ImageUrl", movie.ImageUrl ?? "");
+            cmd.Parameters.AddWithValue("@AddedOn", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
             cmd.ExecuteNonQuery();
         }
 
