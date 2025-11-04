@@ -30,11 +30,25 @@ namespace Cine_Critic_AI.Controllers
         }
 
         // GET: Reviews
-        public IActionResult Index()
+        public IActionResult Index(int? rate, int? movieId)
         {
             var reviews = _database.GetAllReviews();
+
+            // филтриране
+            if (rate.HasValue)
+                reviews = reviews.Where(r => r.Rate == rate.Value).ToList();
+
+            if (movieId.HasValue)
+                reviews = reviews.Where(r => r.MovieId == movieId.Value).ToList();
+
+            // предаваме нужните данни към View-то чрез ViewData
+            ViewData["SelectedRate"] = rate;
+            ViewData["SelectedMovieId"] = movieId;
+            ViewData["Movies"] = _database.GetAllMovies();
+
             return View(reviews);
         }
+
 
         // GET: Reviews/Details/5
         public IActionResult Details(int? id)
