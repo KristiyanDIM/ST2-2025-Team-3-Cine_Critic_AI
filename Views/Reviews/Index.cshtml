@@ -7,63 +7,47 @@
     var movies = ViewData["Movies"] as List<Cine_Critic_AI.Models.Movie>;
 }
 
-<h2 class="text-center my-4">@ViewData["Title"]</h2>
+<h2 class="text-center my-4 fw-bold text-primary">@ViewData["Title"]</h2>
 
-<form asp-action="Index" method="get" class="filter-form mb-4">
-    <div class="filter-grid">
-        <div>
-            <label for="rate" class="form-label">Оценка:</label>
+<!-- 🎨 Филтърна лента -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 filter-bar">
+    <!-- Ляво: бутон за добавяне -->
+    <div>
+        <a asp-action="Create" class="btn btn-success shadow-sm px-4">
+            ➕ Добави ново ревю
+        </a>
+    </div>
+
+    <!-- Дясно: филтри -->
+    <form asp-action="Index" method="get" class="d-flex flex-wrap align-items-center gap-3 justify-content-end filter-form">
+        <div class="d-flex flex-column">
             <select id="rate" name="rate" class="form-select">
-                <option value="">Всички</option>
+                <option value="">Оценка</option>
                 @for (int r = 1; r <= 5; r++)
                 {
-                    if (selectedRate == r)
-                    {
-                        @:
-                        <option value="@r" selected>@r</option>
-                    }
-                    else
-                    {
-                        @:
-                        <option value="@r">@r</option>
-                    }
+                    <option value="@r" @@(selectedRate == r ? "selected" : "")>@r</option>
                 }
             </select>
         </div>
 
-        <div>
-            <label for="movieId" class="form-label">Филм:</label>
+        <div class="d-flex flex-column">
             <select id="movieId" name="movieId" class="form-select">
                 <option value="">Всички филми</option>
                 @foreach (var movie in movies)
                 {
-                    if (selectedMovieId == movie.Id)
-                    {
-                        @:
-                        <option value="@movie.Id" selected>@movie.Title</option>
-                    }
-                    else
-                    {
-                        @:
-                        <option value="@movie.Id">@movie.Title</option>
-                    }
+                    <option value="@movie.Id" @@(selectedMovieId == movie.Id ? "selected" : "")>@movie.Title</option>
                 }
             </select>
         </div>
 
-        <div class="filter-buttons">
+        <div class="d-flex align-items-end gap-2">
             <button type="submit" class="btn btn-primary">Филтрирай</button>
-            <a asp-action="Index" class="btn btn-secondary">Изчисти</a>
+            <a asp-action="Index" class="btn btn-outline-secondary">Изчисти</a>
         </div>
-    </div>
-</form>
-
-<div class="text-center mb-4">
-    <a asp-action="Create" class="btn btn-success btn-lg shadow-sm">
-        ➕ Добави ново ревю
-    </a>
+    </form>
 </div>
 
+<!-- 🎬 Галерия с ревюта (остава както беше) -->
 <div class="reviews-gallery">
     @if (!Model.Any())
     {
@@ -96,3 +80,40 @@
         }
     }
 </div>
+
+<style>
+    .filter-bar {
+        background: #f8f9fa;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        justify-self: center;
+        width:80%;
+    }
+
+    .filter-form select {
+        min-width: 150px;
+    }
+
+    .filter-form label {
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .filter-form button, .filter-form a.btn {
+        font-weight: 600;
+    }
+
+    .btn-success {
+        background-color: #4a90e2;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background-color: #357ab8;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #e9ecef;
+    }
+</style>

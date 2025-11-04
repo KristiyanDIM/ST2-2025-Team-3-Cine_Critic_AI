@@ -4,47 +4,61 @@
     ViewData["Title"] = "Филми";
 }
 
-<h2 class="page-title mb-4">@ViewData["Title"]</h2>
+<h2 class="text-center my-4 fw-bold text-primary">@ViewData["Title"]</h2>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <a asp-action="Create" class="btn btn-primary">➕ Добави нов филм</a>
+<!-- 🎬 Центрирана филтърна лента -->
+<div class="d-flex justify-content-center mb-4">
+    <div class="filter-bar text-center p-3">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
 
-    <form asp-action="Index" method="get" class="d-flex align-items-center gap-2">
-        <input type="text" name="search" value="@Context.Request.Query["search"]" class="form-control" placeholder="🔍 Търси по заглавие..." style="width: 220px;" />
+            <!-- Ляво: бутон за добавяне -->
+            <a asp-action="Create" class="btn btn-success shadow-sm">
+                ➕ Добави нов филм
+            </a>
 
-        <select name="genre" class="form-select" style="width: 160px;">
-            <option value="">🎭 Всички жанрове</option>
-            @foreach (var genre in Model.Select(m => m.Genre).Distinct().OrderBy(g => g))
-            {
-                <option value="@genre" selected="@(Context.Request.Query["genre"] == genre ? "selected" : null)">
-                    @genre
-                </option>
-            }
-        </select>
+            <!-- Дясно: филтри -->
+            <form asp-action="Index" method="get" class="d-flex flex-wrap align-items-center justify-content-center gap-2 filter-form">
+                <input type="text" name="search" value="@Context.Request.Query["search"]"
+                       class="form-control form-control-sm"
+                       placeholder="🔍 Търси по заглавие..." style="width: 200px;" />
 
-        <select name="year" class="form-select" style="width: 130px;">
-            <option value="">📅 Всички години</option>
-            @foreach (var year in Model.Select(m => m.Year).Distinct().OrderByDescending(y => y))
-            {
-                <option value="@year" selected="@(Context.Request.Query["year"] == year.ToString() ? "selected" : null)">
-                    @year
-                </option>
-            }
-        </select>
+                <select name="genre" class="form-select form-select-sm" style="width: 140px;">
+                    <option value="">🎭 Всички жанрове</option>
+                    @foreach (var genre in Model.Select(m => m.Genre).Distinct().OrderBy(g => g))
+                    {
+                        <option value="@genre" selected="@(Context.Request.Query["genre"] == genre ? "selected" : null)">
+                            @genre
+                        </option>
+                    }
+                </select>
 
-        <select name="sort" class="form-select" style="width: 180px;">
-            <option value="date_desc" selected="@(Context.Request.Query["sort"] == "date_desc" ? "selected" : null)">🕒 Най-нови</option>
-            <option value="date_asc" selected="@(Context.Request.Query["sort"] == "date_asc" ? "selected" : null)">🕒 Най-стари</option>
-        </select>
+                <select name="year" class="form-select form-select-sm" style="width: 120px;">
+                    <option value="">📅 Всички години</option>
+                    @foreach (var year in Model.Select(m => m.Year).Distinct().OrderByDescending(y => y))
+                    {
+                        <option value="@year" selected="@(Context.Request.Query["year"] == year.ToString() ? "selected" : null)">
+                            @year
+                        </option>
+                    }
+                </select>
 
-        <button type="submit" class="btn btn-success">Филтрирай</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">🔄 Изчисти</a>
-    </form>
+                <select name="sort" class="form-select form-select-sm" style="width: 150px;">
+                    <option value="date_desc" selected="@(Context.Request.Query["sort"] == "date_desc" ? "selected" : null)">🕒 Най-нови</option>
+                    <option value="date_asc" selected="@(Context.Request.Query["sort"] == "date_asc" ? "selected" : null)">🕒 Най-стари</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary btn-sm">Филтрирай</button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Изчисти</a>
+            </form>
+        </div>
+    </div>
 </div>
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info text-center">❗ Няма намерени филми според зададените критерии.</div>
+    <div class="alert alert-info text-center shadow-sm">
+        ❗ Няма намерени филми според зададените критерии.
+    </div>
 }
 else
 {
@@ -74,3 +88,56 @@ else
         }
     </div>
 }
+
+<style>
+    /* 🎨 Унифициран стил с ревютата */
+    .filter-bar {
+        background: #f9f9f9;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .filter-form select,
+    .filter-form input {
+        min-width: 120px;
+    }
+
+    .filter-form label {
+        font-size: 0.85rem;
+        color: #444;
+        font-weight: 500;
+    }
+
+    .btn-success {
+        background-color: #4a90e2;
+        border: none;
+        font-weight: 600;
+    }
+
+        .btn-success:hover {
+            background-color: #357ab8;
+        }
+
+    .btn-sm {
+        font-size: 1.05rem;
+        padding: 4px 10px;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #e9ecef;
+    }
+
+    @@media (max-width: 768px) {
+        .filter-bar
+
+    {
+        width: 100%;
+    }
+
+    .filter-form {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    }
+</style>
