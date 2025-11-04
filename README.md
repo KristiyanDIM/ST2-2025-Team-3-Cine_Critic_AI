@@ -1,12 +1,19 @@
 ﻿# 🎬 CineCritic AI  
-### STD-2025-Team-CineCriticAI  
+### ST2-2025-Team-3-CineCriticAI  
 
 Това е ASP.NET Core MVC уеб приложение за филмови ревюта, което комбинира традиционен CRUD модел с изкуствен интелект. 
 Потребителите могат да разглеждат и създават ревюта, а интегрираният AI (чрез Ollama + Llama 3) може автоматично да 
 генерира мнения, оценки и да анализира емоционалния тон на текстовете. 
 Системата комбинира **MVC архитектура**, **Entity Framework**, **Singleton**, **Factory** и **Decorator** дизайн патърни.
 
-Проектът е разработен като част от университетската дисциплина **"Софтуерни технологии 2" (2025)**.
+## 👥 Автори
+Проектът е разработен в екип от студенти с цел демонстрация на AI интеграция и уеб архитектурни шаблони в .NET среда, като част 
+от университетската дисциплина **"Софтуерни технологии 2" (2025)**.
+
+**Участници**
+   - Кристиян Димитров, 2301681013 (групов лидер, main frontend developer)
+   - Станимир Найденов, 2301681004 (участник, main backend developer)
+   - Денислав Килимперов, 2301681019 (участник, documentation and ideology initiator)
 
 ---
 
@@ -28,34 +35,57 @@
 ## 🧩 Архитектура
 
 Проектът следва **Model–View–Controller (MVC)** шаблона:
-Cine_Critic_AI/
-│
-├── Controllers/ → Контролери (Movies, Reviews, Account, ChatBot, Statistics, Home)
-├── Models/ → Модели (Movie, Review, User, ViewModels, ChatMessage)
-├── Views/ → Razor изгледи (Account, Chatbot, Home, Movies, Reviews, Shared, Statistcs) по контролери
-├── Services/ → Singleton, Factory AI логика и ChatStrategies
-├── Database/ → DatabaseService (CRUD операции)
-├── wwwroot/ → CSS, JS, изображения
-├── Program.cs → Конфигурация и middleware
-└── appsettings.json → Настройки на базата и логването
+| Директория | Предназначение |
+|------------|-------------|
+| Cine_Critic_AI/Controllers/ | Контролери (Movies, Reviews, Account, ChatBot, Statistics, Home) |
+| Cine_Critic_AI/Models/ | Модели (Movie, Review, User, ViewModels, ChatMessage) |
+| Cine_Critic_AI/Views/ | Razor изгледи (Account, Chatbot, Home, Movies, Reviews, Shared, Statistcs) по контролери |
+| Cine_Critic_AI/Services/ | Singleton, Factory AI логика и ChatStrategies |
+| Cine_Critic_AI/Database/ | DatabaseService (CRUD операции) |
+| Cine_Critic_AI/wwwroot/ | CSS, JS, изображения |
+| Cine_Critic_AI/Program.cs | Конфигурация и middleware |
+| Cine_Critic_AI/appsettings.json | Настройки на базата и логването |
+
+---
+
+## 🗂️ Структура на базата данни
+
+**Таблици:**
+- `Movies (Id, Title, Year, Genre, Director, Description, AddedOn)`
+- `Reviews (Id, Rate, Comment, EmotionTone, Date)`
+- `Users (Id, Username, Email, Password, RegisteredOn)`
+- `ChatMessages (Id, UserId, Sender, Message, Timestamp)`
+
+**Връзки:**
+- Users → ChatMessages 
+  - Тип: 1 към много (1:N)
+  - Обяснение: Един потребител може да има много съобщения, но едно съобщение принадлежи на точно един потребител.
+
+- Users → Reviews
+  - Тип: 1 към много (1:N)
+  - Обяснение: Един потребител може да напише много ревюта, но едно ревю има точно един автор.
+
+- Movies → Reviews
+  - Тип: 1 към много (1:N)
+  - Обяснение: Един филм може да има много ревюта, но едно ревю се отнася за точно един филм.
+
+- Users → Movies
+  - Тип: няма 1:1 или 1:N връзка по настоящата схема
+  - Обяснение: Потребителите не “притежават” филми, така че няма пряка връзка.
 
 ---
 
 ## 🧱 Design Patterns
 
-Проектът имплементира три основни шаблона за проектиране:
-
-1. **Singleton**  
-   - Използван за `AppLoggerSingleton` и `DatabaseService`.  
-   - Гарантира, че логерът и връзката с базата данни съществуват само в една инстанция.
-
-2. **Factory Method**  
-   - Използван за създаване на различни типове ревюта (`IReviewFactory`, `AIReviewFactory`, `ManualReviewFactory`).  
-   - Позволява лесно разширяване на системата с нови видове анализи.
-
-3. **Decorator**  
-   - Използван при обогатяването на ревютата с AI оценка и емоционален тон.  
-   - Добавя функционалност без промяна на основния модел `Review`.
+| **Pattern**                                            | **Where**                                                      | **Purpose**                                                                                                                                   |
+| ------------------------------------------------------ | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **MVC (Model–View–Controller)**                        | ASP.NET MVC структурата                                        | Разделя визуалната част (Views), логиката (Controllers) и данните (Models) за по-добра поддръжка и мащабируемост.                             |
+| **Singleton**                                          | `AppLoggerSingleton`, `DatabaseService`                        | Осигурява само една инстанция на логера и връзката към базата, като предотвратява конфликтни достъпи и гарантира централизирана конфигурация. |
+| **Factory Method**                                     | `IReviewFactory`, `AIReviewFactory`, `ManualReviewFactory`     | Създава обекти от различни типове ревюта без да се уточнява конкретния им клас, което улеснява добавянето на нови типове анализи.             |
+| **Decorator**                                          | При добавянето на AI оценка и емоционален тон към `Review`     | Позволява динамично добавяне на функционалности (AI анализ) към съществуващи обекти без промяна на техния код.                                |
+| **Repository Pattern** | `DatabaseService`                                              | Инкапсулира достъпа до базата и разделя логиката за извличане/запис на данни от контролерите.                                                 |
+| **Dependency Injection**                               | `Program.cs` чрез `builder.Services.AddSingleton()`            | Позволява лесна подмяна и тестване на зависимости (напр. логер, база) без промяна в основния код.                                             |
+| **Validation Pattern**                                 | `[Required]`, `[Range]`, `[StringLength]` в `Movie` и `Review` | Осигурява сигурно въвеждане на данни и предотвратява логически и синтактични грешки.                                                          |
 
 ---
 
@@ -73,7 +103,8 @@ Cine_Critic_AI/
 **Потребители (Account)**  
 - Регистрация, вход и редакция на профил 
 - Потребителя може да търси филми по име
-- Потребителя може да филтрира филмите по жанр, година и дата на добавяне  
+- Потребителя може да филтрира филмите по жанр, година и дата на добавяне
+- Потребителя може да филтрира ревютата по оценка, година и дата на добавяне  
 
 ---
 
@@ -172,27 +203,10 @@ AI модулът (`LocalAIService`) комуникира с локален ез
 
 ---
 
-## 🗂️ Структура на базата данни
+## 🧪 Стартиране на проекта
 
-**Таблици:**
-- `Movies (Id, Title, Year, Genre, Director, Description, AddedOn)`
-- `Reviews (Id, Rate, Comment, EmotionTone, Date)`
-- `Users (Id, Username, Email, Password, RegisteredOn)`
-- `ChatMessages (Id, )`
-
-**Връзки:**
-- Users → ChatMessages 
-  - Тип: 1 към много (1:N)
-  - Обяснение: Един потребител може да има много съобщения, но едно съобщение принадлежи на точно един потребител.
-
-- Users → Reviews
-  - Тип: 1 към много (1:N)
-  - Обяснение: Един потребител може да напише много ревюта, но едно ревю има точно един автор.
-
-- Movies → Reviews
-  - Тип: 1 към много (1:N)
-  - Обяснение: Един филм може да има много ревюта, но едно ревю се отнася за точно един филм.
-
-- Users → Movies
-  - Тип: няма 1:1 или 1:N връзка по настоящата схема
-  - Обяснение: Потребителите не “притежават” филми, така че няма пряка връзка. 
+1. Увери се, че **SQL Server** и **Ollama (Llama3)** са стартирани локално.  
+2. Отвори проекта във **Visual Studio**.  
+3. Настрой `appsettings.json`, ако имаш различно име на базата.  
+4. Натисни **Run ▶️**.  
+5. Посети `https://localhost:xxxx/Movies` или `https://localhost:xxxx/Reviews`.
