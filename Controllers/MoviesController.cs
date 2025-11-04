@@ -26,42 +26,44 @@ namespace Cine_Critic_AI.Controllers
         }
 
         // GET: Movies
-        public IActionResult Index(string? search, int? year, string? genre, DateTime? addedAfter)
+        public IActionResult Index(string? search, string? genre, int? year, string? sort, DateTime? addedAfter)
         {
-            var allMovies = _database.GetAllMovies();
-            var filtered = allMovies.AsQueryable();
+            var allMovies = _database.GetAllMovies(); // връща List<Movie> с валидни AddedOn
+            var q = allMovies.AsQueryable();
 
-            // 🔍 Търсене по заглавие, режисьор или описание
+            // Филтри (по search/genre/year/addedAfter) — ако ползваш вече, запази ги
             if (!string.IsNullOrWhiteSpace(search))
-                filtered = filtered.Where(m =>
-                    m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                    m.Director.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                    m.Description.Contains(search, StringComparison.OrdinalIgnoreCase));
+                q = q.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase)
+                              || (m.Director ?? "").Contains(search, StringComparison.OrdinalIgnoreCase)
+                              || (m.Description ?? "").Contains(search, StringComparison.OrdinalIgnoreCase));
 
-            // 📅 Филтър по година
-            if (year.HasValue)
-                filtered = filtered.Where(m => m.Year == year.Value);
-
-            // 🎭 Филтър по жанр
             if (!string.IsNullOrWhiteSpace(genre))
-                filtered = filtered.Where(m =>
-                    m.Genre.Equals(genre, StringComparison.OrdinalIgnoreCase));
+                q = q.Where(m => string.Equals(m.Genre, genre, StringComparison.OrdinalIgnoreCase));
 
-            // 🕓 Филтър по дата на добавяне
+            if (year.HasValue)
+                q = q.Where(m => m.Year == year.Value);
+
             if (addedAfter.HasValue)
-                filtered = filtered.Where(m => m.AddedOn >= addedAfter.Value);
+                q = q.Where(m => m.AddedOn >= addedAfter.Value);
 
-            // Подготовка на ViewBag данни за падащите менюта
+            // Сортиране — тук е важно
+            q = sort switch
+            {
+                "date_asc" => q.OrderBy(m => m.AddedOn),
+                "date_desc" => q.OrderByDescending(m => m.AddedOn),
+                _ => q.OrderByDescending(m => m.AddedOn) // default: най-нови
+            };
+
+            // Подаваме текущите филтри/опции към view (ViewBag или VM)
+            ViewBag.Search = search;
+            ViewBag.Genre = genre;
+            ViewBag.Year = year;
+            ViewBag.Sort = sort ?? "date_desc";
+
             ViewBag.Genres = allMovies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
             ViewBag.Years = allMovies.Select(m => m.Year).Distinct().OrderByDescending(y => y).ToList();
 
-            // Запомняне на текущите филтри
-            ViewBag.Search = search;
-            ViewBag.Year = year;
-            ViewBag.Genre = genre;
-            ViewBag.AddedAfter = addedAfter?.ToString("yyyy-MM-dd");
-
-            return View(filtered.ToList());
+            return View(q.ToList());
         }
 
 
