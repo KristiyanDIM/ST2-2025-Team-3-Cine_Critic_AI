@@ -231,3 +231,5 @@ namespace Cine_Critic_AI.Controllers
         }
     }
 }
+
+// komentar
