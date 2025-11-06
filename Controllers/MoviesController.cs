@@ -26,12 +26,14 @@ namespace Cine_Critic_AI.Controllers
         }
 
         // GET: Movies
-        public IActionResult Index(string? search, string? genre, int? year, string? sort, DateTime? addedAfter)
+        public IActionResult Index(string? search, string? genre, int? year, string? sort, DateTime? addedAfter, int page = 1)
         {
-            var allMovies = _database.GetAllMovies(); // връща List<Movie> с валидни AddedOn
+            const int pageSize = 20; // По 20 филма на страница
+
+            var allMovies = _database.GetAllMovies(); // връща List<Movie>
             var q = allMovies.AsQueryable();
 
-            // Филтри (по search/genre/year/addedAfter) — ако ползваш вече, запази ги
+            // Филтри
             if (!string.IsNullOrWhiteSpace(search))
                 q = q.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase)
                               || (m.Director ?? "").Contains(search, StringComparison.OrdinalIgnoreCase)
@@ -46,24 +48,38 @@ namespace Cine_Critic_AI.Controllers
             if (addedAfter.HasValue)
                 q = q.Where(m => m.AddedOn >= addedAfter.Value);
 
-            // Сортиране — тук е важно
+            // Сортиране
             q = sort switch
             {
                 "date_asc" => q.OrderBy(m => m.AddedOn),
                 "date_desc" => q.OrderByDescending(m => m.AddedOn),
-                _ => q.OrderByDescending(m => m.AddedOn) // default: най-нови
+                _ => q.OrderByDescending(m => m.AddedOn)
             };
 
-            // Подаваме текущите филтри/опции към view (ViewBag или VM)
+            // Пагинация
+            int totalMovies = q.Count();
+            int totalPages = (int)Math.Ceiling(totalMovies / (double)pageSize);
+            page = Math.Clamp(page, 1, totalPages == 0 ? 1 : totalPages); // безопасност
+
+            var moviesOnPage = q
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Данни към View
             ViewBag.Search = search;
             ViewBag.Genre = genre;
             ViewBag.Year = year;
             ViewBag.Sort = sort ?? "date_desc";
-
+            ViewBag.AddedAfter = addedAfter;
             ViewBag.Genres = allMovies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
             ViewBag.Years = allMovies.Select(m => m.Year).Distinct().OrderByDescending(y => y).ToList();
 
-            return View(q.ToList());
+            // Параметри за навигацията
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
+            return View(moviesOnPage);
         }
 
 

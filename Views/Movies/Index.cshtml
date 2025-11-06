@@ -87,6 +87,57 @@ else
             </div>
         }
     </div>
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav class="pagination-container mt-4">
+            <ul class="pagination justify-content-center">
+
+                <!-- Предишна -->
+                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(ViewBag.CurrentPage - 1)"
+                       asp-route-search="@ViewBag.Search"
+                       asp-route-genre="@ViewBag.Genre"
+                       asp-route-year="@ViewBag.Year"
+                       asp-route-sort="@ViewBag.Sort">
+                        ⬅ Предишна
+                    </a>
+                </li>
+
+                <!-- Номера -->
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-search="@ViewBag.Search"
+                           asp-route-genre="@ViewBag.Genre"
+                           asp-route-year="@ViewBag.Year"
+                           asp-route-sort="@ViewBag.Sort">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                <!-- Следваща -->
+                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(ViewBag.CurrentPage + 1)"
+                       asp-route-search="@ViewBag.Search"
+                       asp-route-genre="@ViewBag.Genre"
+                       asp-route-year="@ViewBag.Year"
+                       asp-route-sort="@ViewBag.Sort">
+                        Следваща ➡
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+
+
 }
 
 <style>
@@ -140,4 +191,28 @@ else
     }
 
     }
+
+    .pagination-container {
+        text-align: center;
+    }
+
+    .pagination .page-link {
+        color: #4a90e2;
+        border-radius: 8px;
+        margin: 0 3px;
+        border: 1px solid #ddd;
+        transition: 0.2s;
+    }
+
+        .pagination .page-link:hover {
+            background-color: #4a90e2;
+            color: #fff;
+        }
+
+    .pagination .active .page-link {
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+    }
+
 </style>
