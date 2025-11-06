@@ -12,8 +12,13 @@
                         <img src="@(!string.IsNullOrEmpty(movie.ImageUrl) ? movie.ImageUrl : "/images/default_poster.jpg")" alt="@movie.Title" />
                     </div>
                     <div class="movie-content">
-                        <h5>@movie.Title</h5>
-                        <p><strong>Година:</strong> @movie.Year</p>
+                        <h4 class="movie-card-title">
+                            @{
+                                var title = movie.Title ?? "";
+                                var shortTitle = title.Length > 20 ? title.Substring(0, 20) + "..." : title;
+                            }
+                            @shortTitle
+                        </h4>                          <p><strong>Година:</strong> @movie.Year</p>
                         <p><strong>Жанр:</strong> @movie.Genre</p>
                     </div>
                     <div class="movie-actions">

@@ -72,7 +72,13 @@ else
                 </div>
 
                 <div class="movie-card-content">
-                    <h4 class="movie-card-title">@movie.Title</h4>
+                    <h4 class="movie-card-title">
+                        @{
+                            var title = movie.Title ?? "";
+                            var shortTitle = title.Length > 20 ? title.Substring(0, 20) + "..." : title;
+                        }
+                        @shortTitle
+                    </h4>                    
                     <p><strong>Година:</strong> @movie.Year</p>
                     <p><strong>Жанр:</strong> @movie.Genre</p>
                     <p><strong>Режисьор:</strong> @movie.Director</p>
