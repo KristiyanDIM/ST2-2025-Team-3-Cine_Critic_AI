@@ -61,6 +61,16 @@ namespace Cine_Critic_AI.Services
         Message TEXT NOT NULL,
         Timestamp TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS Users(
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Username TEXT NOT NULL UNIQUE,
+        Email TEXT NOT NULL UNIQUE,
+        Password TEXT NOT NULL,
+        RegisteredOn TEXT,
+        ResetToken TEXT,
+        ResetTokenExpiry TEXT
+);
     ";
             cmd.ExecuteNonQuery();
 
@@ -236,6 +246,68 @@ namespace Cine_Critic_AI.Services
             }
             return users;
         }
+
+        // ================== FORGOT PASSWORD ==================
+        // Записва токен за нулиране на парола
+        public void SetPasswordResetToken(string email, string token, DateTime expiry)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+        UPDATE Users 
+        SET ResetToken = @Token, ResetTokenExpiry = @Expiry 
+        WHERE Email = @Email";
+            cmd.Parameters.AddWithValue("@Token", token);
+            cmd.Parameters.AddWithValue("@Expiry", expiry.ToString("yyyy-MM-dd HH:mm:ss"));
+            cmd.Parameters.AddWithValue("@Email", email);
+            cmd.ExecuteNonQuery();
+        }
+
+        // Проверява токена и връща потребител
+        public User? GetUserByResetToken(string token)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT * FROM Users WHERE ResetToken = @Token";
+            cmd.Parameters.AddWithValue("@Token", token);
+
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                var expiry = DateTime.Parse(reader["ResetTokenExpiry"].ToString() ?? DateTime.MinValue.ToString());
+                if (expiry > DateTime.Now)
+                {
+                    return new User
+                    {
+                        Id = Convert.ToInt32(reader["Id"]),
+                        Username = reader["Username"].ToString(),
+                        Email = reader["Email"].ToString()
+                    };
+                }
+            }
+            return null;
+        }
+
+        // Обновява паролата и изчиства токена
+        public void ResetPassword(int userId, string newHashedPassword)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+        UPDATE Users 
+        SET Password = @Password, ResetToken = NULL, ResetTokenExpiry = NULL
+        WHERE Id = @Id";
+            cmd.Parameters.AddWithValue("@Password", newHashedPassword);
+            cmd.Parameters.AddWithValue("@Id", userId);
+            cmd.ExecuteNonQuery();
+        }
+
 
         // ================== MOVIES ==================
         public void InsertMovie(Movie movie)

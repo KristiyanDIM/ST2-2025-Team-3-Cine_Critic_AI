@@ -179,5 +179,62 @@ namespace Cine_Critic_AI.Controllers
             TempData["Success"] = "Регистрацията е успешна! Влез в профила си.";
             return RedirectToAction("Login");
         }
+
+        // 🔹 Забравена парола — въвеждаш само имейл
+        [HttpGet]
+        public IActionResult ForgotPassword() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ForgotPassword(string email)
+        {
+            var user = _database.GetAllUsers().FirstOrDefault(u => u.Email == email);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Не е намерен потребител с този имейл.");
+                return View();
+            }
+
+            // Пренасочваме към ResetPassword
+            TempData["Email"] = email;
+            return RedirectToAction("ResetPassword");
+        }
+
+
+        // 🔹 Reset Password — тук вече сменяш паролата
+        [HttpGet]
+        public IActionResult ResetPassword()
+        {
+            var email = TempData["Email"]?.ToString();
+            if (string.IsNullOrEmpty(email))
+                return RedirectToAction("ForgotPassword");
+
+            ViewBag.Email = email;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ResetPassword(string username, string email, string newPassword)
+        {
+            var user = _database.GetAllUsers()
+                                .FirstOrDefault(u => u.Username == username && u.Email == email);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Невалидно потребителско име или имейл.");
+                return View();
+            }
+
+            // Хешираме новата парола
+            var hasher = new PasswordHasher<User>();
+            user.Password = hasher.HashPassword(user, newPassword);
+            _database.UpdateUser(user);
+
+            TempData["Success"] = "Паролата е успешно променена! Влез отново.";
+            return RedirectToAction("Login");
+        }
+
+
     }
 }

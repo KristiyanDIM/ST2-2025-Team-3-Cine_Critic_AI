@@ -20,10 +20,17 @@
                 <span asp-validation-for="Username" class="text-danger"></span>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-2">
                 <label asp-for="Password" class="form-label fw-semibold">Парола</label>
                 <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Въведете парола" />
                 <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <!-- 🔹 Линк за забравена парола -->
+            <div class="text-end mb-4">
+                <a asp-action="ForgotPassword" class="text-decoration-none small text-primary">
+                    Забравена парола?
+                </a>
             </div>
 
             <button type="submit" class="btn btn-primary w-100 py-2">🔐 Вход</button>
