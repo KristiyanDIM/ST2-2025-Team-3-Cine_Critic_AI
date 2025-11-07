@@ -33,7 +33,7 @@
 
             <div class="mb-3">
                 <label asp-for="EmotionTone" class="form-label fw-semibold"></label>
-                <input asp-for="EmotionTone" class="form-control" placeholder="Емоционален тон" id="toneInput" readonly />
+                <input asp-for="EmotionTone" class="form-control" placeholder="Емоционален тон" id="toneInput" />
                 <span asp-validation-for="EmotionTone" class="text-danger"></span>
             </div>
 
@@ -238,12 +238,12 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-            const aiButton = document.getElementById("aiButton");
+        const aiButton = document.getElementById("aiButton");
         const rateInput = document.getElementById("rateInput");
         const commentInput = document.getElementById("commentInput");
         const toneInput = document.getElementById("toneInput");
 
-        // ⚙️ Създаваме контейнера с твоята анимация
+        // Анимация „AI мисли...“
         const loader = document.createElement("div");
         loader.id = "aiLoader";
         loader.innerHTML = `
@@ -258,41 +258,61 @@
             <p class="thinking-text">AI мисли...</p>
         `;
         loader.style.display = "none";
-        document.querySelector(".review-form-card").appendChild(loader);
+        document.querySelector(".review-form-card")?.appendChild(loader);
 
         aiButton.addEventListener("click", async function () {
-            const rate = rateInput.value;
-            if (!rate) {
-                alert("Моля, въведи оценка.");
+            const rate = rateInput.value.trim();
+            const comment = commentInput.value.trim();
+            const tone = toneInput.value.trim();
+
+            // Проверка: ако има въведен текст, забраняваме AI
+            if (comment.length > 0 || tone.length > 0) {
+                alert("Моля, изчистете полетата за коментар и емоционален тон преди да използвате AI генерацията.");
+                return;
+            }
+
+            // Проверка: дали оценката е валидна (1–5)
+            if (!rate || isNaN(rate) || rate < 1 || rate > 5) {
+                alert("Моля, въведете валидна оценка между 1 и 5.");
                 return;
             }
 
             const description = `Филм с оценка ${rate}`;
 
-            // ⏳ Показваме анимацията
+            // Показваме анимацията
             loader.style.display = "block";
             aiButton.disabled = true;
             aiButton.innerText = "🤔 Генерирам...";
 
             try {
+                // Изпращаме заявка към контролера /Reviews/Generate
+                // Тя ще стартира LocalAIService, който връща текст, емоция и рейтинг
                 const response = await fetch('/Reviews/Generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `description=${encodeURIComponent(description)}`
                 });
 
+                //Ако AI е върнал успешен отговор (HTTP 200)
                 if (response.ok) {
+                    // Преобразуваме JSON отговора до JS обект
                     const data = await response.json();
+                    // Попълваме съответните полета във формата
                     commentInput.value = data.comment;
                     toneInput.value = data.emotion;
                     rateInput.value = data.rate;
-                } else {
+                }
+                // Ако отговорът не е успешен
+                else 
+                {
                     alert("⚠️ Грешка при свързване с AI.");
                 }
+
+                //Ако възникне грешка при изпълнение (напр. мрежова или AI сървърна)
             } catch (error) {
                 alert("❌ Възникна грешка: " + error);
             } finally {
-                // ✅ Скриваме анимацията
+                // Скриваме анимацията и връщаме бутона
                 loader.style.display = "none";
                 aiButton.disabled = false;
                 aiButton.innerText = "🤖 Генерирай с AI";
@@ -300,3 +320,4 @@
         });
     </script>
 }
+
