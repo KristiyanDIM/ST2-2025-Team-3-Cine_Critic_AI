@@ -62,6 +62,8 @@ namespace Cine_Critic_AI.Services
         Timestamp TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+
+    -- За онлайн интеграция с имейл услуга, използвайте SendGrid, SMTP или друг доставчик.
     CREATE TABLE IF NOT EXISTS Users(
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
         Username TEXT NOT NULL UNIQUE,
@@ -248,6 +250,8 @@ namespace Cine_Critic_AI.Services
         }
 
         // ================== FORGOT PASSWORD ==================
+        // За онлайн интеграция с имейл услуга, използвайте SendGrid, SMTP или друг доставчик.
+
         // Записва токен за нулиране на парола
         public void SetPasswordResetToken(string email, string token, DateTime expiry)
         {
