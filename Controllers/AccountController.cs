@@ -235,6 +235,52 @@ namespace Cine_Critic_AI.Controllers
             return RedirectToAction("Login");
         }
 
+        [Authorize]
+        [HttpGet]
+        public IActionResult DeleteAccount()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount(DeleteAccountViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = _database.GetAllUsers()
+                                .FirstOrDefault(u => u.Email == model.Email && u.Username == User.Identity.Name);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Няма потребител с този имейл.");
+                return View(model);
+            }
+
+            var passwordHasher = new PasswordHasher<User>();
+            var result = passwordHasher.VerifyHashedPassword(user, user.Password, model.Password);
+
+            if (result == PasswordVerificationResult.Failed)
+            {
+                ModelState.AddModelError("", "Невалидна парола.");
+                return View(model);
+            }
+
+            // 🗑️ Изтриваме акаунта
+            _database.DeleteUser(user.Id);
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.Session.Clear();
+
+            _appLogger.Log($"Потребителят {user.Username} изтри акаунта си.");
+            TempData["Success"] = "Акаунтът е изтрит успешно.";
+
+            return RedirectToAction("Index", "Home");
+        }
+
+
 
     }
 }

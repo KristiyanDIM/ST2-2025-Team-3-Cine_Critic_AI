@@ -312,6 +312,17 @@ namespace Cine_Critic_AI.Services
             cmd.ExecuteNonQuery();
         }
 
+        // ================== DELETE USER ==================
+        public void DeleteUser(int id)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM Users WHERE Id = @Id";
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.ExecuteNonQuery();
+        }
+
 
         // ================== MOVIES ==================
         public void InsertMovie(Movie movie)

@@ -1,0 +1,28 @@
+﻿@model Cine_Critic_AI.Models.DeleteAccountViewModel
+@{
+    ViewData["Title"] = "Изтриване на акаунт";
+}
+
+<div class="delete-account-container">
+    <h2 class="text-danger">⚠️ Изтриване на акаунт</h2>
+    <p>За да изтриете акаунта си, потвърдете имейла и паролата си.</p>
+
+    <form asp-action="DeleteAccount" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">Имейл</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Парола</label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-danger w-100">🗑️ Изтрий акаунта</button>
+        <a asp-action="Index" asp-controller="Home" class="btn btn-secondary w-100 mt-2">Отказ</a>
+    </form>
+</div>
