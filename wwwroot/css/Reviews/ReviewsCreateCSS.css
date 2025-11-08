@@ -1,0 +1,174 @@
+﻿.review-form-card {
+    max-width: 600px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.review-form-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+}
+
+.review-form label {
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.review-form input,
+.review-form textarea,
+.review-form select {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+    .review-form input:focus,
+    .review-form textarea:focus,
+    .review-form select:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 5px rgba(74,144,226,0.4);
+    }
+
+.btn-success {
+    background-color: #4a90e2;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .btn-success:hover {
+        background-color: #357ab8;
+        transform: scale(1.03);
+    }
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        transform: scale(1.03);
+    }
+
+.btn-outline-secondary {
+    border-radius: 8px;
+    border-width: 2px;
+    transition: all 0.2s ease;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #e2e6ea;
+        transform: scale(1.03);
+    }
+
+/* Премахваме стрелките от input[type=number] във всички браузъри */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield; /* за Firefox */
+}
+
+/* AI Loader стил — твоята версия */
+#aiLoader {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.dot-loader {
+    --uib-size: 40px;
+    --uib-color: #4a90e2;
+    --uib-speed: 1.5s;
+    --dot-size: calc(var(--uib-size) * 0.17);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: var(--uib-size);
+    width: var(--uib-size);
+    margin: 0 auto;
+    animation: smoothRotate calc(var(--uib-speed) * 1.8) linear infinite;
+}
+
+.dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    animation: rotate var(--uib-speed) ease-in-out infinite;
+}
+
+    .dot::before {
+        content: '';
+        height: var(--dot-size);
+        width: var(--dot-size);
+        border-radius: 50%;
+        background-color: var(--uib-color);
+        transition: background-color 0.3s ease;
+    }
+
+    .dot:nth-child(2),
+    .dot:nth-child(2)::before {
+        animation-delay: calc(var(--uib-speed) * -0.835 * 0.5);
+    }
+
+    .dot:nth-child(3),
+    .dot:nth-child(3)::before {
+        animation-delay: calc(var(--uib-speed) * -0.668 * 0.5);
+    }
+
+    .dot:nth-child(4),
+    .dot:nth-child(4)::before {
+        animation-delay: calc(var(--uib-speed) * -0.501 * 0.5);
+    }
+
+    .dot:nth-child(5),
+    .dot:nth-child(5)::before {
+        animation-delay: calc(var(--uib-speed) * -0.334 * 0.5);
+    }
+
+    .dot:nth-child(6),
+    .dot:nth-child(6)::before {
+        animation-delay: calc(var(--uib-speed) * -0.167 * 0.5);
+    }
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    65%, 100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes smoothRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.thinking-text {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 10px;
+    font-style: italic;
+}
+

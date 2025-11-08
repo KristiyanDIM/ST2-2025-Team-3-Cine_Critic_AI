@@ -1,0 +1,47 @@
+﻿.form-card {
+    max-width: 600px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.form-card:hover {
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    transform: translateY(-3px);
+}
+
+.form-label {
+    color: #333;
+}
+
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px 14px;
+    transition: all 0.2s;
+}
+
+    .form-control:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25,135,84,0.25);
+    }
+
+.btn-success {
+    background-color: #198754;
+    border: none;
+}
+
+    .btn-success:hover {
+        background-color: #157347;
+    }
+
+.btn-outline-secondary:hover {
+    background-color: #e9ecef;
+}
+
+h2 {
+    color: #222;
+    font-weight: 600;
+}
+

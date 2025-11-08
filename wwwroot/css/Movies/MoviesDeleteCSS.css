@@ -1,0 +1,55 @@
+﻿
+.delete-card {
+    max-width: 550px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.delete-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+}
+
+.movie-info {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+.movie-poster {
+    width: 120px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+ul li {
+    margin-bottom: 6px;
+    font-size: 1rem;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .btn-danger:hover {
+        background-color: #b02a37;
+        transform: scale(1.03);
+    }
+
+.btn-outline-secondary:hover {
+    background-color: #e9ecef;
+    transform: scale(1.03);
+}
+
+h2 {
+    font-weight: 700;
+}
+

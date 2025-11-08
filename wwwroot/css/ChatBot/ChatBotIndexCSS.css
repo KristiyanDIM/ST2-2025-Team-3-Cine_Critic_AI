@@ -1,0 +1,124 @@
+﻿/**/
+.chat-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 85vh;
+    padding: 40px;
+}
+
+.chat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    width: 100%;
+    max-width: 700px;
+    justify-self: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+.chat-box {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+}
+
+.user-message, .bot-message {
+    max-width: 80%;
+    padding: 10px 15px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    word-break: break-word;
+}
+
+.user-message {
+    background: #007bff;
+    color: #fff;
+    align-self: flex-end;
+}
+
+.bot-message {
+    background: #f1f1f1;
+    align-self: flex-start;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+}
+
+    .chat-input-area input {
+        flex: 1;
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+    }
+
+        .chat-input-area input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.5);
+        }
+
+    .chat-input-area button {
+        border-radius: 10px;
+        padding: 10px 40px;
+    }
+
+
+.loader-container {
+    --uib-size: 43px;
+    --uib-color: #555;
+    --uib-speed: 1.3s;
+    --uib-dot-size: calc(var(--uib-size) * 0.24);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--uib-dot-size);
+    width: var(--uib-size);
+    margin: 10px 0;
+}
+
+    .loader-dot,
+    .loader-container::before,
+    .loader-container::after {
+        content: '';
+        display: block;
+        height: var(--uib-dot-size);
+        width: var(--uib-dot-size);
+        border-radius: 50%;
+        background-color: var(--uib-color);
+        transform: scale(0);
+        transition: background-color 0.3s ease;
+    }
+
+    .loader-container::before {
+        animation: loaderPulse var(--uib-speed) ease-in-out calc(var(--uib-speed) * -0.375) infinite;
+    }
+
+.loader-dot {
+    animation: loaderPulse var(--uib-speed) ease-in-out calc(var(--uib-speed) * -0.25) infinite both;
+}
+
+.loader-container::after {
+    animation: loaderPulse var(--uib-speed) ease-in-out calc(var(--uib-speed) * -0.125) infinite;
+}
+
+@keyframes loaderPulse {
+    0%, 100% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1);
+    }
+}
+

@@ -1,9 +1,13 @@
 ﻿@model Cine_Critic_AI.Models.Review
+<head>
+    <link rel="stylesheet" href="~/css/Reviews/ReviewsDeleteCSS.css" asp-append-version="true" />
+</head>
 
 @{
     ViewData["Title"] = "Изтриване на ревю";
 }
 
+<body>
 <div class="container mt-5 d-flex justify-content-center">
     <div class="delete-review-card p-4 shadow rounded-4">
         <div class="text-center mb-4">
@@ -38,53 +42,4 @@
     </div>
 </div>
 
-<style>
-    .delete-review-card {
-        max-width: 800px;
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-        .delete-review-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        }
-
-    .delete-icon {
-        font-size: 3rem;
-    }
-
-    .review-details dt {
-        color: #555;
-    }
-
-    .review-details dd {
-        color: #333;
-    }
-
-    .btn-danger {
-        background-color: #e74c3c;
-        border: none;
-        color: #fff;
-        transition: all 0.2s ease;
-    }
-
-        .btn-danger:hover {
-            background-color: #c0392b;
-            transform: scale(1.05);
-        }
-
-    .btn-outline-secondary {
-        border-color: #95a5a6;
-        color: #95a5a6;
-        transition: all 0.2s ease;
-    }
-
-        .btn-outline-secondary:hover {
-            background-color: #ecf0f1;
-            color: #2c3e50;
-            transform: scale(1.05);
-        }
-</style>
+</body>

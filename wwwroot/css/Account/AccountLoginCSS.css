@@ -1,0 +1,74 @@
+﻿
+/* Основен фон */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+}
+
+/* Карта на формата */
+.login-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 35px;
+    width: 100%;
+    max-width: 420px;
+    transition: all 0.3s ease-in-out;
+    animation: fadeInUp 0.7s ease-out;
+}
+
+    .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+/* Икона най-отгоре */
+.login-icon {
+    font-size: 3rem;
+    background: linear-gradient(45deg, #4a90e2, #6a11cb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+/* Полета */
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px 15px;
+    transition: all 0.2s ease;
+}
+
+    .form-control:focus {
+        border-color: #6a11cb;
+        box-shadow: 0 0 8px rgba(106,17,203,0.3);
+    }
+
+/* Бутон */
+.btn-primary {
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-primary:hover {
+        transform: scale(1.03);
+        opacity: 0.9;
+    }
+
+/* Линк за регистрация */
+.register-link {
+    color: #6a11cb;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .register-link:hover {
+        text-decoration: underline;
+    }
+
+

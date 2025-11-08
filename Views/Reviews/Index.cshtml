@@ -1,5 +1,10 @@
 ﻿@model IEnumerable<Cine_Critic_AI.Models.Review>
 
+<head>
+    <link rel="stylesheet" href="~/css/Reviews/ReviewsIndexCSS.css" asp-append-version="true" />
+</head>
+
+<body>
 @{
     ViewData["Title"] = "Ревюта";
     var selectedRate = ViewData["SelectedRate"] as int?;
@@ -81,39 +86,4 @@
     }
 </div>
 
-<style>
-    .filter-bar {
-        background: #f8f9fa;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        justify-self: center;
-        width:80%;
-    }
-
-    .filter-form select {
-        min-width: 150px;
-    }
-
-    .filter-form label {
-        color: #333;
-        font-size: 0.9rem;
-    }
-
-    .filter-form button, .filter-form a.btn {
-        font-weight: 600;
-    }
-
-    .btn-success {
-        background-color: #4a90e2;
-        border: none;
-    }
-
-    .btn-success:hover {
-        background-color: #357ab8;
-    }
-
-    .btn-outline-secondary:hover {
-        background-color: #e9ecef;
-    }
-</style>
+</body>

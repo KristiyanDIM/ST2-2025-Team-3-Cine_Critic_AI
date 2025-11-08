@@ -1,0 +1,148 @@
+﻿/* картичките на ревютата*/
+.reviews-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.review-card {
+    display: flex;
+    flex-direction: row;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    width: 450px;
+}
+
+    .review-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    }
+
+.poster {
+    flex-shrink: 0;
+    width: 130px;
+    overflow: hidden;
+}
+
+    .poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.review-info {
+    padding: 12px 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+    .review-info h4 {
+        margin: 0 0 6px 0;
+        font-size: 1.1rem;
+        color: #222;
+    }
+
+.rating-emotion {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 10px;
+}
+
+.comment {
+    flex-grow: 1;
+    font-size: 0.95rem;
+    color: #555;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* до 3 реда */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 10px;
+}
+
+.buttons {
+    display: flex;
+    gap: 6px;
+}
+
+    .buttons .btn {
+        flex: 1;
+        font-size: 0.85rem;
+        padding: 5px 0;
+    }
+
+.btn-primary {
+    background-color: #4a90e2;
+    border-color: #4a90e2;
+    color: #fff;
+}
+
+.btn-warning {
+    background-color: #f5a623;
+    border-color: #f5a623;
+    color: #fff;
+}
+
+.btn-danger {
+    background-color: #d0021b;
+    border-color: #d0021b;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #357ab8;
+}
+
+.btn-warning:hover {
+    background-color: #d1871f;
+}
+
+.btn-danger:hover {
+    background-color: #a10015;
+}
+
+
+/* филтър */
+.filter-bar {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    justify-self: center;
+    width: 80%;
+}
+
+.filter-form select {
+    min-width: 150px;
+}
+
+.filter-form label {
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.filter-form button, .filter-form a.btn {
+    font-weight: 600;
+}
+
+.btn-success {
+    background-color: #4a90e2;
+    border: none;
+}
+
+    .btn-success:hover {
+        background-color: #357ab8;
+    }
+
+.btn-outline-secondary:hover {
+    background-color: #e9ecef;
+}
+
+
