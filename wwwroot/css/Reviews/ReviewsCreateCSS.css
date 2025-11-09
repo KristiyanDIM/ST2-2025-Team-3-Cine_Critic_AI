@@ -78,7 +78,7 @@ input[type=number] {
     -moz-appearance: textfield; /* за Firefox */
 }
 
-/* AI Loader стил — твоята версия */
+/* AI Loader стил — нашата версия */
 #aiLoader {
     text-align: center;
     margin-top: 15px;
