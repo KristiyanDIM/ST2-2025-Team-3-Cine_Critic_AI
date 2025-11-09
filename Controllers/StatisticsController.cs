@@ -10,14 +10,19 @@ namespace Cine_Critic_AI.Controllers
     public class StatisticsController : Controller
     {
         private readonly DatabaseService _db;
+        private readonly AppLoggerSingleton _appLogger;
 
-        public StatisticsController(DatabaseService db)
+
+        public StatisticsController(DatabaseService db, AppLoggerSingleton appLogger)
         {
             _db = db;
+            _appLogger = appLogger;
         }
 
         public IActionResult Index()
         {
+            _appLogger.Log("Потребителят е посетил страница със статистиката.");
+
             var reviews = _db.GetAllReviews();
             var movies = _db.GetAllMovies();
 

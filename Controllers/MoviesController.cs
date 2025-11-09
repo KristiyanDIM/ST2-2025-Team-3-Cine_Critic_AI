@@ -28,6 +28,8 @@ namespace Cine_Critic_AI.Controllers
         // GET: Movies
         public IActionResult Index(string? search, string? genre, int? year, string? sort, DateTime? addedAfter, int page = 1)
         {
+            _appLogger.Log("Потребителят е посетил страницата с филмите.");
+
             const int pageSize = 20; // По 20 филма на страница
 
             var allMovies = _database.GetAllMovies(); // връща List<Movie>

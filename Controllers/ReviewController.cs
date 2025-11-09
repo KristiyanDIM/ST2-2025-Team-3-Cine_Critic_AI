@@ -32,6 +32,9 @@ namespace Cine_Critic_AI.Controllers
         // GET: Reviews
         public IActionResult Index(int? rate, int? movieId)
         {
+
+            _appLogger.Log("Потребителят е посетил страницата с Ревюта.");
+
             var reviews = _database.GetAllReviews();
 
             // филтриране

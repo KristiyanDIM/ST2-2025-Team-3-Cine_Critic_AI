@@ -11,17 +11,21 @@ namespace Cine_Critic_AI.Controllers
     {
         private readonly LocalAIService _ai;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly AppLoggerSingleton _appLogger; // Singleton Logger
 
-        public ChatBotController(LocalAIService ai, IHttpContextAccessor httpContextAccessor)
+        public ChatBotController(LocalAIService ai, IHttpContextAccessor httpContextAccessor, AppLoggerSingleton appLogger)
         {
             _ai = ai;
             _httpContextAccessor = httpContextAccessor;
+            _appLogger = appLogger;
         }
 
 
         [HttpGet]
         public IActionResult Index()
         {
+            _appLogger.Log("Потребителят е посетил страницата с Чат бота.");
+
             // Вземаме userId от сесия
             var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
