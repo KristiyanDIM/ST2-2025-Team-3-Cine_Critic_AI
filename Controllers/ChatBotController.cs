@@ -4,6 +4,7 @@ using Cine_Critic_AI.Services.ChatStrategies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Cine_Critic_AI.Controllers
 {
@@ -56,15 +57,22 @@ namespace Cine_Critic_AI.Controllers
                 Timestamp = DateTime.Now
             };
             DatabaseService.Instance.InsertChatMessage(userChatMessage);
-
+            
             // 🔹 Избор на стратегия
             var chatContext = new ChatContext();
-            if (userMessage.Contains("препоръчвай", StringComparison.OrdinalIgnoreCase))
-                chatContext.SetStrategy(new RecommendationStrategy());
-            else if (userMessage.Contains("оцени", StringComparison.OrdinalIgnoreCase))
-                chatContext.SetStrategy(new RatingStrategy());
+            IChatStrategy chosenStrategy;
+
+            if (Regex.IsMatch(userMessage, "препоръ", RegexOptions.IgnoreCase))
+                chosenStrategy = new RecommendationStrategy();
+            else if (Regex.IsMatch(userMessage, "оцен", RegexOptions.IgnoreCase))
+                chosenStrategy = new RatingStrategy();
             else
-                chatContext.SetStrategy(new AnalysisStrategy());
+                chosenStrategy = new AnalysisStrategy();
+
+            chatContext.SetStrategy(chosenStrategy);
+
+            _appLogger.Log($"Използвана стратегия: {chosenStrategy.GetType().Name} за съобщение '{userMessage}'.");
+
 
             // 🔹 Изпълнение на стратегия
             string responseText = await chatContext.ExecuteStrategy(userMessage, userId, _ai);
