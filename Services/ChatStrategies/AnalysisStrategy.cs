@@ -9,7 +9,7 @@ namespace Cine_Critic_AI.Services.ChatStrategies
             var json = JsonSerializer.Serialize(new
             {
                 model = "llama3",
-                prompt = $"Ти си AI филмов критик. Анализирай: {userMessage}"
+                prompt = $"Отговаряй само на български език. Ти си AI филмов критик. Анализирай: {userMessage}"
             });
             return await ai.PostToOllamaAsync(json);
         }

@@ -57,7 +57,7 @@ namespace Cine_Critic_AI.Controllers
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = false, // ❗ няма да пази cookie след затваряне
-                ExpiresUtc = DateTime.UtcNow.AddMinutes(20), // валидност 5 секунди
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(20), // валидност 20 секунди
                 AllowRefresh = false
            
             };

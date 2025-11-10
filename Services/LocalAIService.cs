@@ -195,7 +195,7 @@ namespace Cine_Critic_AI.Services
             var json = JsonSerializer.Serialize(new
             {
                 model = "llama3",
-                prompt = prompt
+                prompt = $"Отговаряй само на български език."
             });
 
             var response = await _http.PostAsync("api/generate", new StringContent(json, Encoding.UTF8, "application/json"));
