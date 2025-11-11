@@ -140,8 +140,10 @@ namespace Cine_Critic_AI.Services
             return sb.ToString().Trim();
         }
 
+        /// Изпраща JSON заявка към локалния Ollama сървър и връща комбинирания текстов отговор.
         public async Task<string> PostToOllamaAsync(string json)
         {
+            //Създаваме POST заявка към Ollama API (endpoint: /api/generate)
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Post, "api/generate")
@@ -149,23 +151,31 @@ namespace Cine_Critic_AI.Services
                     Content = new StringContent(json, Encoding.UTF8, "application/json")
                 };
 
+                // Изпращаме заявката и чакаме само HTTP заглавията първо
                 using var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
+                // Проверяваме дали заявката е успешна
                 response.EnsureSuccessStatusCode();
 
+                // Ще комбинираме стриймнатия (частичен) отговор на AI в StringBuilder
                 var sb = new StringBuilder();
 
+                // Четем отговорa като поток (stream)
                 using var stream = await response.Content.ReadAsStreamAsync();
                 using var reader = new StreamReader(stream);
 
                 string? line;
                 while ((line = await reader.ReadLineAsync()) != null)
                 {
+                    // Пропускаме празни редове
                     if (string.IsNullOrWhiteSpace(line)) continue;
 
                     try
                     {
+                        // Всеки ред от Ollama е JSON — опитваме да го парснем
                         using var doc = JsonDocument.Parse(line);
+
+                        // Извличаме съдържанието от полето "response"
                         if (doc.RootElement.TryGetProperty("response", out var resp))
                         {
                             sb.Append(resp.GetString());
@@ -176,12 +186,15 @@ namespace Cine_Critic_AI.Services
                         // Ако някой ред не е JSON, го игнорираме
                     }
                 }
-
+                // Връщаме комбинирания текстов резултат
                 var result = sb.ToString().Trim();
+
+                // Ако Ollama не върне нищо — връщаме предупредително съобщение
                 return string.IsNullOrWhiteSpace(result) ? "⚠️ AI не върна отговор." : result;
             }
             catch (Exception ex)
             {
+                // Обработка на грешки при комуникация с Ollama
                 Console.WriteLine($"❌ Ollama Error: {ex.Message}");
                 return $"⚠️ Грешка при комуникация с AI: {ex.Message}";
             }

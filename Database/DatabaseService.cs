@@ -20,46 +20,49 @@ namespace Cine_Critic_AI.Services
             InitializeDatabase();
         }
 
+        //Инициализира(създава) всички необходими таблици в базата данни, ако все още не съществуват.
         private void InitializeDatabase()
         {
+            //Създаваме нова SQLite връзка към локалната база данни
             using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
+            //Подготвяме SQL команда за създаване на таблиците, ако ги няма
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
     CREATE TABLE IF NOT EXISTS Users(
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        Username TEXT NOT NULL UNIQUE,
-        Email TEXT NOT NULL UNIQUE,
-        Password TEXT NOT NULL,
-        RegisteredOn TEXT
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,           -- Уникален идентификатор (автоматично)
+        Username TEXT NOT NULL UNIQUE,                  -- Потребителско име (задължително и уникално)
+        Email TEXT NOT NULL UNIQUE,                     -- Имейл адрес (задължителен и уникален)
+        Password TEXT NOT NULL,                         -- Хеширана парола
+        RegisteredOn TEXT                               -- Дата на регистрация
     );
 
             CREATE TABLE IF NOT EXISTS Movies(
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Title TEXT NOT NULL,
-                Year INTEGER NOT NULL,
-                Genre TEXT NOT NULL,
-                Director TEXT NOT NULL,
-                Description TEXT,
-                ImageUrl TEXT
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,   -- Уникален идентификатор
+                Title TEXT NOT NULL,                    -- Заглавие на филма
+                Year INTEGER NOT NULL,                  -- Година на излизане
+                Genre TEXT NOT NULL,                    -- Жанр
+                Director TEXT NOT NULL,                 -- Режисьор
+                Description TEXT,                       -- Кратко описание
+                ImageUrl TEXT                           -- Връзка към постер (снимка)
             );
 
     CREATE TABLE IF NOT EXISTS Reviews(
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        Rate INTEGER NOT NULL,
-        Comment TEXT,
-        EmotionTone TEXT,
-        Date TEXT NOT NULL,
-        MovieId INTEGER
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,           -- Уникален идентификатор
+        Rate INTEGER NOT NULL,                          -- Оценка от 1 до 5
+        Comment TEXT,                                   -- Коментар към филма
+        EmotionTone TEXT,                               -- Емоционален тон (позитивен, неутрален, негативен)
+        Date TEXT NOT NULL,                             -- Дата на създаване на ревюто
+        MovieId INTEGER                                 -- 🔗 Външен ключ към филм (1:N връзка с Movies)
     );
 
-    CREATE TABLE IF NOT EXISTS ChatMessages(
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        UserId INTEGER NOT NULL,
-        Sender TEXT NOT NULL,
+    CREATE TABLE IF NOT EXISTS ChatMessages(            -- Уникален идентификатор
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 🔗 Външен ключ към потребител (1:N с Users)
+        UserId INTEGER NOT NULL,                        -- Изпращач ('user' или 'bot')
+        Sender TEXT NOT NULL,                           -- Съдържание на съобщението
         Message TEXT NOT NULL,
-        Timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+        Timestamp TEXT NOT NULL DEFAULT (datetime('now'))   -- Време на изпращане (по подразбиране текущо)
     );
 
 
@@ -76,7 +79,7 @@ namespace Cine_Critic_AI.Services
     ";
             cmd.ExecuteNonQuery();
 
-            // ✅ Проверка и ако колоната Date е NOT NULL, я правим NULLABLE
+            // Проверка и ако колоната Date е NOT NULL, я правим NULLABLE
             cmd.CommandText = "PRAGMA table_info(Reviews);";
             using (var reviewReader = cmd.ExecuteReader())
             {
@@ -115,7 +118,7 @@ namespace Cine_Critic_AI.Services
                 }
             }
 
-            // ✅ Проверка и добавяне на MovieId, ако липсва
+            //Проверка и добавяне на MovieId, ако липсва
             cmd.CommandText = "PRAGMA table_info(Reviews);";
             using var reader = cmd.ExecuteReader();
             bool movieIdExists = false;
@@ -135,7 +138,7 @@ namespace Cine_Critic_AI.Services
                 cmd.ExecuteNonQuery();
             }
 
-            // ✅ Проверка и добавяне на ImageUrl в Movies, ако липсва
+            // Проверка и добавяне на ImageUrl в Movies, ако липсва
             cmd.CommandText = "PRAGMA table_info(Movies);";
             using var reader2 = cmd.ExecuteReader();
             bool imageUrlExists = false;
@@ -171,11 +174,15 @@ namespace Cine_Critic_AI.Services
         }
 
         // ================== USERS ==================
+
+        // Вмъкване на нов потребител в базата данни
         public void InsertUser(User user)
         {
             using var conn = new SqliteConnection(_connectionString);
             conn.Open();
             using var cmd = conn.CreateCommand();
+
+            //Вмъкваме основната информация за потребителя
             cmd.CommandText = @"
                 INSERT INTO Users (Username, Email, Password, RegisteredOn)
                 VALUES (@Username, @Email, @Password, @RegisteredOn)";
@@ -186,6 +193,7 @@ namespace Cine_Critic_AI.Services
             cmd.ExecuteNonQuery();
         }
 
+        //Актуализиране на данни за потребител (примерно при промяна на име/парола)
         public void UpdateUser(User user)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -204,6 +212,7 @@ namespace Cine_Critic_AI.Services
             cmd.ExecuteNonQuery();
         }
 
+        // Връща конкретен потребител по потребителско име
         public User GetUserByUsername(string username)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -227,6 +236,7 @@ namespace Cine_Critic_AI.Services
             return null;
         }
 
+        //Връща всички потребители (напр. за администрация)
         public List<User> GetAllUsers()
         {
             var users = new List<User>();
@@ -313,10 +323,13 @@ namespace Cine_Critic_AI.Services
         }
 
         // ================== DELETE USER ==================
+
+        //Изтрива потребител само ако имейлът и паролата съвпадат.
         public void DeleteUser(int id)
         {
             using var conn = new SqliteConnection(_connectionString);
             conn.Open();
+            //Първо проверяваме дали съществува такъв потребител
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "DELETE FROM Users WHERE Id = @Id";
             cmd.Parameters.AddWithValue("@Id", id);
@@ -325,14 +338,19 @@ namespace Cine_Critic_AI.Services
 
 
         // ================== MOVIES ==================
+
+        //Добавя нов филм в таблицата Movies
         public void InsertMovie(Movie movie)
         {
-            using var conn = new SqliteConnection(_connectionString);
-            conn.Open();
+            using var conn = new SqliteConnection(_connectionString); // Създава връзка към базата
+            conn.Open();  // Отваря я
+
+            // Създава SQL команда
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
         INSERT INTO Movies (Title, Year, Genre, Director, Description, ImageUrl, AddedOn)
         VALUES (@Title, @Year, @Genre, @Director, @Description, @ImageUrl, @AddedOn)";
+            // Подаваме стойности за всеки параметър от модела Movie
             cmd.Parameters.AddWithValue("@Title", movie.Title);
             cmd.Parameters.AddWithValue("@Year", movie.Year);
             cmd.Parameters.AddWithValue("@Genre", movie.Genre);
@@ -340,9 +358,10 @@ namespace Cine_Critic_AI.Services
             cmd.Parameters.AddWithValue("@Description", movie.Description ?? "");
             cmd.Parameters.AddWithValue("@ImageUrl", movie.ImageUrl ?? "");
             cmd.Parameters.AddWithValue("@AddedOn", movie.AddedOn.ToString("yyyy-MM-dd HH:mm:ss"));
-            cmd.ExecuteNonQuery();
+            cmd.ExecuteNonQuery(); // Изпълнява командата (INSERT)
         }
 
+        // Актуализира съществуващ филм по неговото ID
         public void UpdateMovie(Movie movie)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -357,6 +376,7 @@ namespace Cine_Critic_AI.Services
             Description = @Description,
             ImageUrl = @ImageUrl
         WHERE Id = @Id";
+            // Подаваме новите стойности
             cmd.Parameters.AddWithValue("@Title", movie.Title);
             cmd.Parameters.AddWithValue("@Year", movie.Year);
             cmd.Parameters.AddWithValue("@Genre", movie.Genre);
@@ -364,9 +384,10 @@ namespace Cine_Critic_AI.Services
             cmd.Parameters.AddWithValue("@Description", movie.Description ?? "");
             cmd.Parameters.AddWithValue("@ImageUrl", movie.ImageUrl ?? "");
             cmd.Parameters.AddWithValue("@Id", movie.Id);
-            cmd.ExecuteNonQuery();
+            cmd.ExecuteNonQuery(); // Изпълнява UPDATE заявката
         }
 
+        // Изтрива филм от базата по неговото ID
         public void DeleteMovie(int id)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -374,9 +395,10 @@ namespace Cine_Critic_AI.Services
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "DELETE FROM Movies WHERE Id = @Id";
             cmd.Parameters.AddWithValue("@Id", id);
-            cmd.ExecuteNonQuery();
+            cmd.ExecuteNonQuery(); // Изпълнява DELETE заявката
         }
 
+        // Взима всички филми от базата и ги връща като List<Movie>
         public List<Movie> GetAllMovies()
         {
             var movies = new List<Movie>();
@@ -384,7 +406,7 @@ namespace Cine_Critic_AI.Services
             conn.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT * FROM Movies";
-            using var reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader(); // Четем всеки ред от таблицата
             while (reader.Read())
             {
                 movies.Add(new Movie
@@ -397,13 +419,14 @@ namespace Cine_Critic_AI.Services
                     Description = reader["Description"].ToString(),
                     ImageUrl = reader["ImageUrl"] != DBNull.Value ? reader["ImageUrl"].ToString() : "",
                     AddedOn = reader["AddedOn"] != DBNull.Value
-                        ? DateTime.Parse(reader["AddedOn"].ToString())
+                        ? DateTime.Parse(reader["AddedOn"].ToString()) // ако има дата
                         : DateTime.Now // fallback ако е стара база
                 });
             }
-            return movies;
+            return movies; // Връща пълен списък с филми
         }
 
+        // Взима конкретен филм по неговото ID
         public Movie GetMovieById(int id)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -415,6 +438,7 @@ namespace Cine_Critic_AI.Services
             using var reader = cmd.ExecuteReader();
             if (reader.Read())
             {
+                // Ако има резултат — връщаме Movie обект
                 return new Movie
                 {
                     Id = Convert.ToInt32(reader["Id"]),
@@ -429,11 +453,14 @@ namespace Cine_Critic_AI.Services
                         : DateTime.Now
                 };
             }
+            // Ако не намерим филма — връщаме null
             return null;
         }
 
 
         // ================== REVIEWS ==================
+
+        // Вмъква ново ревю в базата данни
         public void InsertReview(Review review)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -442,9 +469,11 @@ namespace Cine_Critic_AI.Services
             cmd.CommandText = @"
                 INSERT INTO Reviews (Rate, Comment, EmotionTone, Date, MovieId)
                 VALUES (@Rate, @Comment, @EmotionTone, @Date, @MovieId)";
+            // Подаваме параметрите, като проверяваме за null стойности
             cmd.Parameters.AddWithValue("@Rate", review.Rate);
             cmd.Parameters.AddWithValue("@Comment", review.Comment ?? "");
             cmd.Parameters.AddWithValue("@EmotionTone", review.EmotionTone ?? "");
+            // Ако Date има стойност — я форматираме, иначе записваме NULL
             cmd.Parameters.AddWithValue("@Date",
                 review.Date.HasValue
                     ? review.Date.Value.ToString("yyyy-MM-dd HH:mm:ss")
@@ -452,6 +481,7 @@ namespace Cine_Critic_AI.Services
             cmd.ExecuteNonQuery();
         }
 
+        // 🔹 Актуализира вече съществуващо ревю по неговото Id
         public void UpdateReview(Review review)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -464,6 +494,7 @@ namespace Cine_Critic_AI.Services
                     EmotionTone = @EmotionTone,
                     Date = @Date
                 WHERE Id = @Id";
+            // Подаваме новите стойности
             cmd.Parameters.AddWithValue("@Rate", review.Rate);
             cmd.Parameters.AddWithValue("@Comment", review.Comment ?? "");
             cmd.Parameters.AddWithValue("@EmotionTone", review.EmotionTone ?? "");
@@ -471,9 +502,10 @@ namespace Cine_Critic_AI.Services
                 review.Date.HasValue
                     ? review.Date.Value.ToString("yyyy-MM-dd HH:mm:ss")
                     : (object)DBNull.Value); cmd.Parameters.AddWithValue("@Id", review.Id);
-            cmd.ExecuteNonQuery();
+            cmd.ExecuteNonQuery();// Изпълнява UPDATE заявката
         }
 
+        // Изтрива ревю от базата по неговото ID
         public void DeleteReview(int id)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -481,9 +513,10 @@ namespace Cine_Critic_AI.Services
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "DELETE FROM Reviews WHERE Id = @Id";
             cmd.Parameters.AddWithValue("@Id", id);
-            cmd.ExecuteNonQuery();
+            cmd.ExecuteNonQuery(); // Изпълнява DELETE заявката
         }
 
+        // Взима всички ревюта от базата, заедно с данните на съответните филми
         public List<Review> GetAllReviews()
         {
             var reviews = new List<Review>();
@@ -493,7 +526,7 @@ namespace Cine_Critic_AI.Services
             cmd.CommandText = @"
                 SELECT r.*, m.Title, m.Year, m.Genre, m.Director, m.Description, m.ImageUrl
                 FROM Reviews r
-                JOIN Movies m ON r.MovieId = m.Id";
+                JOIN Movies m ON r.MovieId = m.Id"; // Свързваме ревютата с филмите им
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -503,10 +536,14 @@ namespace Cine_Critic_AI.Services
                     Rate = Convert.ToInt32(reader["Rate"]),
                     Comment = reader["Comment"].ToString(),
                     EmotionTone = reader["EmotionTone"].ToString(),
+
+                    // Проверяваме дали има валидна дата, иначе оставяме null
                     Date = reader["Date"] != DBNull.Value && !string.IsNullOrWhiteSpace(reader["Date"].ToString())
     ? DateTime.Parse(reader["Date"].ToString())
     : (DateTime?)null,
                     MovieId = Convert.ToInt32(reader["MovieId"]),
+
+                    // Вграденият филм, към който се отнася ревюто
                     Movie = new Movie
                     {
                         Id = Convert.ToInt32(reader["MovieId"]),
@@ -519,9 +556,10 @@ namespace Cine_Critic_AI.Services
                     }
                 });
             }
-            return reviews;
+            return reviews; // Връща всички ревюта с включени филмови данни
         }
 
+        // Връща едно конкретно ревю по неговото ID
         public Review GetReviewById(int id)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -545,38 +583,47 @@ namespace Cine_Critic_AI.Services
                     MovieId = reader["MovieId"] != DBNull.Value ? Convert.ToInt32(reader["MovieId"]) : 0
                 };
             }
-            return null;
+            return null; // Ако няма ревю с това ID — връща null
         }
 
         // ================== CHAT MESSAGES INSERT ==================
+
+        // Вмъква ново съобщение в таблицата ChatMessages
         public void InsertChatMessage(ChatMessage msg)
         {
+            // Създаваме нова връзка с базата данни
             using var conn = new SqliteConnection(_connectionString);
             conn.Open();
+
+            // Създаваме SQL команда за добавяне на ред
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
         INSERT INTO ChatMessages (UserId, Sender, Message, Timestamp)
         VALUES (@UserId, @Sender, @Message, @Timestamp)";
-            cmd.Parameters.AddWithValue("@UserId", msg.UserId);
-            cmd.Parameters.AddWithValue("@Sender", msg.Sender);
-            cmd.Parameters.AddWithValue("@Message", msg.Message);
-            cmd.Parameters.AddWithValue("@Timestamp", msg.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"));
-            cmd.ExecuteNonQuery();
+            // Добавяме параметрите безопасно, за да предотвратим SQL injection
+            cmd.Parameters.AddWithValue("@UserId", msg.UserId);  // кой потребител е изпратил съобщението
+            cmd.Parameters.AddWithValue("@Sender", msg.Sender); // "user" или "AI"
+            cmd.Parameters.AddWithValue("@Message", msg.Message); // съдържанието на съобщението
+            cmd.Parameters.AddWithValue("@Timestamp", msg.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")); // дата и час
+            cmd.ExecuteNonQuery(); // Изпълняваме заявката (INSERT)
         }
 
 
         // ================== CHAT MESSAGES GET ==================
+
+        // Взима всички чат съобщения на конкретен потребител
         public List<ChatMessage> GetChatMessagesByUser(int userId)
         {
-            var messages = new List<ChatMessage>();
+            var messages = new List<ChatMessage>(); // Списък, в който ще запишем резултатите
             using var conn = new SqliteConnection(_connectionString);
             conn.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT * FROM ChatMessages WHERE UserId = @UserId ORDER BY Timestamp";
-            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@UserId", userId); // Извличаме само съобщенията на дадения потребител
+
 
             using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            while (reader.Read()) // Четем ред по ред
             {
                 messages.Add(new ChatMessage
                 {
@@ -587,10 +634,12 @@ namespace Cine_Critic_AI.Services
                     Timestamp = DateTime.Parse(reader["Timestamp"].ToString())
                 });
             }
-            return messages;
+            return messages; // Връщаме всички съобщения за този потребител
         }
 
         // ================== CHAT MESSAGES DELETE ==================
+
+        // Изтрива всички чат съобщения на конкретен потребител
         public void ClearChatByUser(int userId)
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -598,7 +647,7 @@ namespace Cine_Critic_AI.Services
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "DELETE FROM ChatMessages WHERE UserId = @UserId";
             cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.ExecuteNonQuery();
+            cmd.ExecuteNonQuery(); // Изпълняваме DELETE заявката
         }
 
 
