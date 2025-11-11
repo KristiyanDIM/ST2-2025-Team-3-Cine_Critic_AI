@@ -54,11 +54,11 @@ namespace Cine_Critic_AI.Services
         Comment TEXT,                                   -- Коментар към филма
         EmotionTone TEXT,                               -- Емоционален тон (позитивен, неутрален, негативен)
         Date TEXT NOT NULL,                             -- Дата на създаване на ревюто
-        MovieId INTEGER                                 -- 🔗 Външен ключ към филм (1:N връзка с Movies)
+        MovieId INTEGER                                 -- Външен ключ към филм (1:N връзка с Movies)
     );
 
     CREATE TABLE IF NOT EXISTS ChatMessages(            -- Уникален идентификатор
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,           -- 🔗 Външен ключ към потребител (1:N с Users)
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,           -- Външен ключ към потребител (1:N с Users)
         UserId INTEGER NOT NULL,                        -- Изпращач ('user' или 'bot')
         Sender TEXT NOT NULL,                           -- Съдържание на съобщението
         Message TEXT NOT NULL,
